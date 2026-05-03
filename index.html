@@ -568,12 +568,14 @@
     <div class="top-actions">
       <span class="reset-btn" onclick="resetAll()">↺ Réinitialiser</span>
       <span class="expand-all" onclick="expandAll()">⊞ Tout ouvrir</span>
-      <span class="reset-btn" onclick="exportState()">💾 Exporter État</span>
-      <label class="reset-btn" for="import-file" style="cursor:pointer;">📁 Importer État</label>
-      <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importState(event)">
+      <span id="supabase-status" class="reset-btn" style="margin-left:auto;cursor:default;">Non connecté</span>
+      <span id="supabase-login-btn" class="reset-btn" onclick="signIn()">🔌 Se connecter</span>
+      <span id="supabase-logout-btn" class="reset-btn" onclick="signOut()" style="display:none;">🚪 Se
+        déconnecter</span>
     </div>
     <div id="app"></div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.31.0/dist/supabase.min.js"></script>
   <script>
     var SECS = [
       /* ─── 1. CAMPUS FRANCE ─── */
@@ -734,6 +736,91 @@
     var state = {};
     SECS.forEach(function (s) { s.items.forEach(function (i) { state[i.id] = false; }); });
 
+    // Supabase configuration — replace the anon key with your own project key
+    var SUPABASE_URL = 'https://workflow.supabase.co';
+    var SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+    var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var currentUser = null;
+
+    function updateAuthUI() {
+      var status = document.getElementById('supabase-status');
+      var loginBtn = document.getElementById('supabase-login-btn');
+      var logoutBtn = document.getElementById('supabase-logout-btn');
+      if (currentUser) {
+        status.textContent = 'Connecté : ' + currentUser.email;
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'inline-block';
+      } else {
+        status.textContent = 'Non connecté';
+        loginBtn.style.display = 'inline-block';
+        logoutBtn.style.display = 'none';
+      }
+    }
+
+    async function initSupabase() {
+      var { data } = await supabaseClient.auth.getSession();
+      currentUser = data.session ? data.session.user : null;
+      updateAuthUI();
+      if (currentUser) {
+        await loadRemoteState();
+      }
+    }
+
+    supabaseClient.auth.onAuthStateChange(function (event, session) {
+      currentUser = session ? session.user : null;
+      updateAuthUI();
+      if (currentUser) {
+        loadRemoteState();
+      }
+    });
+
+    async function signIn() {
+      var email = prompt('Email pour se connecter à Supabase :');
+      if (!email) return;
+      var password = prompt('Mot de passe Supabase :');
+      if (!password) return;
+      var { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+      if (error) return alert('Erreur de connexion : ' + error.message);
+      if (data.session) {
+        currentUser = data.user;
+        updateAuthUI();
+        await loadRemoteState();
+        alert('Connecté avec succès.');
+      }
+    }
+
+    async function signOut() {
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      updateAuthUI();
+    }
+
+    async function loadRemoteState() {
+      if (!currentUser) return;
+      var { data, error } = await supabaseClient
+        .from('checklist_states')
+        .select('state')
+        .eq('user_id', currentUser.id)
+        .single();
+      if (error && error.code !== 'PGRST116') {
+        console.error('Supabase load error:', error);
+        return;
+      }
+      if (data && data.state) {
+        Object.assign(state, data.state);
+        render();
+        saveState();
+      }
+    }
+
+    async function saveRemoteState() {
+      if (!currentUser) return;
+      var { error } = await supabaseClient
+        .from('checklist_states')
+        .upsert({ user_id: currentUser.id, state: state, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (error) console.error('Supabase save error:', error);
+    }
+
     // Load state from localStorage
     function loadState() {
       var saved = localStorage.getItem('visaChecklistState');
@@ -750,35 +837,6 @@
     // Save state to localStorage
     function saveState() {
       localStorage.setItem('visaChecklistState', JSON.stringify(state));
-    }
-
-    // Export state as JSON file
-    function exportState() {
-      var dataStr = JSON.stringify(state, null, 2);
-      var dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-      var exportFileDefaultName = 'visa-checklist-state.json';
-      var linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-    }
-
-    // Import state from JSON file
-    function importState(event) {
-      var file = event.target.files[0];
-      if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        try {
-          var importedState = JSON.parse(e.target.result);
-          Object.assign(state, importedState);
-          render();
-          saveState();
-        } catch (e) {
-          alert('Erreur lors de l\'importation du fichier JSON.');
-        }
-      };
-      reader.readAsText(file);
     }
 
     function total() { return Object.keys(state).length; }
@@ -799,6 +857,7 @@
       if (el) el.classList.toggle('chk', state[id]);
       updP();
       saveState();
+      saveRemoteState();
     }
     function togSec(id) {
       document.getElementById('sb-' + id).classList.toggle('open');
@@ -816,6 +875,7 @@
       document.querySelectorAll('.item').forEach(function (el) { el.classList.remove('chk'); });
       updP();
       saveState();
+      saveRemoteState();
     }
     function tgHtml(tags) {
       return tags.map(function (t) {
@@ -863,6 +923,7 @@
     }
     loadState();
     render();
+    initSupabase();
   </script>
 </body>
 
