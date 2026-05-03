@@ -6,8 +6,8 @@
 # 2. Remplace TON_TOKEN par ton token GitHub (Settings > Developer > Personal Access Tokens)
 # 3. Lance ce script : bash SETUP.sh
 
-GITHUB_USERNAME="TON_USERNAME"
-REPO_NAME="visa-checklist-besancon"
+GITHUB_USERNAME="abd-el-madjid"
+REPO_NAME="workflow"
 
 git init
 git add .

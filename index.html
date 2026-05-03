@@ -1,333 +1,869 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dossier Visa Étudiant — Besançon M2 | Checklist Complète</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0ede8;color:#1a1a1a;padding:16px 12px 80px}
-.container{max-width:780px;margin:0 auto}
-.page-title{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
-.page-sub{font-size:13px;color:#777;margin-bottom:4px}
-.rdv-badge{display:inline-flex;align-items:center;gap:6px;background:#fee2e2;color:#991b1b;font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:14px}
-.prog-wrap{background:#ddd9d2;border-radius:99px;height:8px;margin-bottom:4px;overflow:hidden}
-.prog-bar{height:8px;background:linear-gradient(90deg,#1D9E75,#27ae60);border-radius:99px;transition:width .35s}
-.prog-lbl{font-size:12px;color:#999;margin-bottom:20px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dossier Visa Étudiant — Besançon M2 | Checklist Complète</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-/* SECTION */
-.sec{background:#fff;border-radius:14px;margin-bottom:12px;overflow:hidden;border:1px solid #e8e4de;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.sec-hdr{display:flex;align-items:center;gap:10px;padding:14px 15px;cursor:pointer;user-select:none;transition:background .12s}
-.sec-hdr:hover{background:#faf9f6}
-.sec-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.sec-inf{flex:1;min-width:0}
-.sec-name{font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.3}
-.sec-cnt{font-size:11.5px;color:#999;margin-top:2px}
-.badge{font-size:10.5px;padding:3px 8px;border-radius:99px;font-weight:700;white-space:nowrap;flex-shrink:0}
-.b-blu{background:#dbeafe;color:#1e40af}
-.b-grn{background:#dcfce7;color:#15803d}
-.b-amb{background:#fef3c7;color:#92400e}
-.b-red{background:#fee2e2;color:#991b1b}
-.b-pur{background:#ede9fe;color:#5b21b6}
-.chev{font-size:10px;color:#bbb;transition:transform .2s;margin-left:4px;flex-shrink:0}
-.chev.open{transform:rotate(180deg)}
-.sec-body{display:none;border-top:1px solid #f0ece6}
-.sec-body.open{display:block}
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0ede8;
+      color: #1a1a1a;
+      padding: 16px 12px 80px
+    }
 
-/* NOTES */
-.note{padding:11px 15px;font-size:12.5px;line-height:1.65;border-bottom:1px solid #f0ece6}
-.n-grn{background:#f0fdf4;border-left:3px solid #22c55e;color:#14532d}
-.n-amb{background:#fffbeb;border-left:3px solid #f59e0b;color:#78350f}
-.n-blu{background:#eff6ff;border-left:3px solid #3b82f6;color:#1e3a5f}
-.n-red{background:#fff1f2;border-left:3px solid #f43f5e;color:#881337}
-.n-pur{background:#f5f3ff;border-left:3px solid #7c3aed;color:#3b0764}
-.note strong{font-weight:700}
-.note a{color:inherit;font-weight:600}
+    .container {
+      max-width: 780px;
+      margin: 0 auto
+    }
 
-/* ITEM */
-.item{display:flex;align-items:flex-start;gap:12px;padding:13px 15px;border-bottom:1px solid #f5f2ee;cursor:pointer;transition:background .1s}
-.item:last-child{border-bottom:none}
-.item:hover{background:#faf9f6}
-.item.chk{opacity:.5}
-.cbx{width:20px;height:20px;border:2px solid #d0cbc4;border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:#fff}
-.item.chk .cbx{background:#1D9E75;border-color:#1D9E75}
-.ck-ico{display:none;width:11px;height:9px}
-.item.chk .ck-ico{display:block}
-.ibody{flex:1}
-.ititle{font-size:13.5px;font-weight:700;color:#1a1a1a;line-height:1.4}
-.item.chk .ititle{text-decoration:line-through;color:#aaa}
-.idet{font-size:12px;color:#555;margin-top:4px;line-height:1.6}
-.ihow{margin-top:6px;padding:7px 10px;background:#fafaf8;border-left:2px solid #d0cbc4;border-radius:0 5px 5px 0}
-.ihow-title{font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
-.ihow-txt{font-size:11.5px;color:#444;line-height:1.6}
-.ihow-txt a{color:#1d4ed8;font-weight:600}
-.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700}
-.t-req{background:#fee2e2;color:#b91c1c}
-.t-opt{background:#dcfce7;color:#15803d}
-.t-don{background:#d1fae5;color:#065f46}
-.t-inf{background:#dbeafe;color:#1e40af}
-.t-urg{background:#fef3c7;color:#92400e}
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 2px
+    }
 
-/* CHAIN */
-.chain{padding:12px 15px;border-bottom:1px solid #f0ece6;background:#fafaf8}
-.chain-t{font-size:10.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
-.chain-steps{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
-.cstep{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:70px}
-.csdot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2.5px solid}
-.cslbl{font-size:10px;margin-top:4px;max-width:78px;line-height:1.35;font-weight:600}
-.cs-arr{font-size:14px;color:#ccc;align-self:center;margin-bottom:16px}
-.cs1 .csdot{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd}.cs1 .cslbl{color:#1d4ed8}
-.cs2 .csdot{background:#fffbeb;color:#b45309;border-color:#fcd34d}.cs2 .cslbl{color:#b45309}
-.cs3 .csdot{background:#f0fdf4;color:#15803d;border-color:#86efac}.cs3 .cslbl{color:#15803d}
-.cs4 .csdot{background:#f5f5f5;color:#9ca3af;border-color:#e5e7eb;text-decoration:line-through}.cs4 .cslbl{color:#9ca3af;font-style:italic}
+    .page-sub {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 4px
+    }
 
-/* TIMELINE */
-.tl{padding:12px 15px;border-bottom:1px solid #f0ece6;background:#fafaf8}
-.tl-t{font-size:10.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
-.tl-row{display:flex;gap:10px;margin-bottom:5px}
-.tl-date{font-size:11.5px;font-weight:700;min-width:90px;padding-top:1px;flex-shrink:0}
-.tl-txt{font-size:12px;color:#555;line-height:1.5}
-.dt-now{color:#dc2626}
-.dt-sun{color:#7c3aed}
-.dt-wed{color:#b45309}
-.dt-jun{color:#15803d}
-.dt-aft{color:#1d4ed8}
+    .rdv-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px
+    }
 
-.reset-btn{margin-top:18px;font-size:12px;color:#bbb;cursor:pointer;text-decoration:underline;display:inline-block}
-.reset-btn:hover{color:#666}
-.expand-all{font-size:12px;color:#6b7280;cursor:pointer;text-decoration:underline;display:inline-block;margin-left:14px}
-.top-actions{margin-bottom:14px;display:flex;align-items:center;gap:0}
-</style>
+    .prog-wrap {
+      background: #ddd9d2;
+      border-radius: 99px;
+      height: 8px;
+      margin-bottom: 4px;
+      overflow: hidden
+    }
+
+    .prog-bar {
+      height: 8px;
+      background: linear-gradient(90deg, #1D9E75, #27ae60);
+      border-radius: 99px;
+      transition: width .35s
+    }
+
+    .prog-lbl {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 20px
+    }
+
+    /* SECTION */
+    .sec {
+      background: #fff;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1px solid #e8e4de;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .06)
+    }
+
+    .sec-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 15px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .12s
+    }
+
+    .sec-hdr:hover {
+      background: #faf9f6
+    }
+
+    .sec-ico {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0
+    }
+
+    .sec-inf {
+      flex: 1;
+      min-width: 0
+    }
+
+    .sec-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.3
+    }
+
+    .sec-cnt {
+      font-size: 11.5px;
+      color: #999;
+      margin-top: 2px
+    }
+
+    .badge {
+      font-size: 10.5px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0
+    }
+
+    .b-blu {
+      background: #dbeafe;
+      color: #1e40af
+    }
+
+    .b-grn {
+      background: #dcfce7;
+      color: #15803d
+    }
+
+    .b-amb {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .b-red {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .b-pur {
+      background: #ede9fe;
+      color: #5b21b6
+    }
+
+    .chev {
+      font-size: 10px;
+      color: #bbb;
+      transition: transform .2s;
+      margin-left: 4px;
+      flex-shrink: 0
+    }
+
+    .chev.open {
+      transform: rotate(180deg)
+    }
+
+    .sec-body {
+      display: none;
+      border-top: 1px solid #f0ece6
+    }
+
+    .sec-body.open {
+      display: block
+    }
+
+    /* NOTES */
+    .note {
+      padding: 11px 15px;
+      font-size: 12.5px;
+      line-height: 1.65;
+      border-bottom: 1px solid #f0ece6
+    }
+
+    .n-grn {
+      background: #f0fdf4;
+      border-left: 3px solid #22c55e;
+      color: #14532d
+    }
+
+    .n-amb {
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+      color: #78350f
+    }
+
+    .n-blu {
+      background: #eff6ff;
+      border-left: 3px solid #3b82f6;
+      color: #1e3a5f
+    }
+
+    .n-red {
+      background: #fff1f2;
+      border-left: 3px solid #f43f5e;
+      color: #881337
+    }
+
+    .n-pur {
+      background: #f5f3ff;
+      border-left: 3px solid #7c3aed;
+      color: #3b0764
+    }
+
+    .note strong {
+      font-weight: 700
+    }
+
+    .note a {
+      color: inherit;
+      font-weight: 600
+    }
+
+    /* ITEM */
+    .item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 15px;
+      border-bottom: 1px solid #f5f2ee;
+      cursor: pointer;
+      transition: background .1s
+    }
+
+    .item:last-child {
+      border-bottom: none
+    }
+
+    .item:hover {
+      background: #faf9f6
+    }
+
+    .item.chk {
+      opacity: .5
+    }
+
+    .cbx {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #d0cbc4;
+      border-radius: 5px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+      background: #fff
+    }
+
+    .item.chk .cbx {
+      background: #1D9E75;
+      border-color: #1D9E75
+    }
+
+    .ck-ico {
+      display: none;
+      width: 11px;
+      height: 9px
+    }
+
+    .item.chk .ck-ico {
+      display: block
+    }
+
+    .ibody {
+      flex: 1
+    }
+
+    .ititle {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.4
+    }
+
+    .item.chk .ititle {
+      text-decoration: line-through;
+      color: #aaa
+    }
+
+    .idet {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+      line-height: 1.6
+    }
+
+    .ihow {
+      margin-top: 6px;
+      padding: 7px 10px;
+      background: #fafaf8;
+      border-left: 2px solid #d0cbc4;
+      border-radius: 0 5px 5px 0
+    }
+
+    .ihow-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 3px
+    }
+
+    .ihow-txt {
+      font-size: 11.5px;
+      color: #444;
+      line-height: 1.6
+    }
+
+    .ihow-txt a {
+      color: #1d4ed8;
+      font-weight: 600
+    }
+
+    .tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 6px
+    }
+
+    .tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 700
+    }
+
+    .t-req {
+      background: #fee2e2;
+      color: #b91c1c
+    }
+
+    .t-opt {
+      background: #dcfce7;
+      color: #15803d
+    }
+
+    .t-don {
+      background: #d1fae5;
+      color: #065f46
+    }
+
+    .t-inf {
+      background: #dbeafe;
+      color: #1e40af
+    }
+
+    .t-urg {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    /* CHAIN */
+    .chain {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0ece6;
+      background: #fafaf8
+    }
+
+    .chain-t {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 10px
+    }
+
+    .chain-steps {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .cstep {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 70px
+    }
+
+    .csdot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      border: 2.5px solid
+    }
+
+    .cslbl {
+      font-size: 10px;
+      margin-top: 4px;
+      max-width: 78px;
+      line-height: 1.35;
+      font-weight: 600
+    }
+
+    .cs-arr {
+      font-size: 14px;
+      color: #ccc;
+      align-self: center;
+      margin-bottom: 16px
+    }
+
+    .cs1 .csdot {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #93c5fd
+    }
+
+    .cs1 .cslbl {
+      color: #1d4ed8
+    }
+
+    .cs2 .csdot {
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #fcd34d
+    }
+
+    .cs2 .cslbl {
+      color: #b45309
+    }
+
+    .cs3 .csdot {
+      background: #f0fdf4;
+      color: #15803d;
+      border-color: #86efac
+    }
+
+    .cs3 .cslbl {
+      color: #15803d
+    }
+
+    .cs4 .csdot {
+      background: #f5f5f5;
+      color: #9ca3af;
+      border-color: #e5e7eb;
+      text-decoration: line-through
+    }
+
+    .cs4 .cslbl {
+      color: #9ca3af;
+      font-style: italic
+    }
+
+    /* TIMELINE */
+    .tl {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0ece6;
+      background: #fafaf8
+    }
+
+    .tl-t {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 8px
+    }
+
+    .tl-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 5px
+    }
+
+    .tl-date {
+      font-size: 11.5px;
+      font-weight: 700;
+      min-width: 90px;
+      padding-top: 1px;
+      flex-shrink: 0
+    }
+
+    .tl-txt {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.5
+    }
+
+    .dt-now {
+      color: #dc2626
+    }
+
+    .dt-sun {
+      color: #7c3aed
+    }
+
+    .dt-wed {
+      color: #b45309
+    }
+
+    .dt-jun {
+      color: #15803d
+    }
+
+    .dt-aft {
+      color: #1d4ed8
+    }
+
+    .reset-btn {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #bbb;
+      cursor: pointer;
+      text-decoration: underline;
+      display: inline-block
+    }
+
+    .reset-btn:hover {
+      color: #666
+    }
+
+    .expand-all {
+      font-size: 12px;
+      color: #6b7280;
+      cursor: pointer;
+      text-decoration: underline;
+      display: inline-block;
+      margin-left: 14px
+    }
+
+    .top-actions {
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 0
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-<h1 class="page-title">Dossier Visa Étudiant — M2 Besançon</h1>
-<p class="page-sub">Université Marie et Louis Pasteur &nbsp;·&nbsp; M2 Systèmes Logiciels &nbsp;·&nbsp; Checklist exhaustive avec instructions</p>
-<div class="rdv-badge">📅 RDV CAPAGO : 8 juin 2025</div>
-<div class="prog-wrap"><div class="prog-bar" id="pbar" style="width:0%"></div></div>
-<div class="prog-lbl" id="plbl">0 / 0 cochés</div>
-<div class="top-actions">
-  <span class="reset-btn" onclick="resetAll()">↺ Réinitialiser</span>
-  <span class="expand-all" onclick="expandAll()">⊞ Tout ouvrir</span>
-</div>
-<div id="app"></div>
-</div>
-<script>
-var SECS=[
-/* ─── 1. CAMPUS FRANCE ─── */
-{id:'cf',ico:'🎓',bg:'#eff6ff',nm:'Campus France — Documents officiels',badge:{t:'Obligatoire',c:'b-red'},
-note:{t:'<strong>Important :</strong> Après ton RDV de vérification mercredi, ton message de fin de procédure sera envoyé automatiquement par email. <strong>Surveille ta boîte mail</strong> dès mercredi soir. CAPAGO t\'enverra ensuite automatiquement une confirmation de RDV (certaines années). Ton RDV du 8 juin est déjà fixé — garde-le.',c:'n-blu'},
-items:[
-{id:'cf1',t:'Message de fin de procédure Campus France',d:'Email envoyé automatiquement après validation de l\'authentification de tes diplômes. À imprimer et joindre OBLIGATOIREMENT. Sans ce document, le dossier visa est incomplet.',h:'Attendu après le RDV de vérification de mercredi. Vérifie sur ton compte <strong>etudes-en-france.fr</strong> rubrique "mon dossier". Imprime en 2 exemplaires.',g:['req','Après mercredi']},
-{id:'cf2',t:'Attestation de préinscription / d\'admission M2',d:'Document officiel de l\'Université Marie et Louis Pasteur confirmant ton inscription au M2 Systèmes Logiciels.',h:'Téléchargeable sur ton compte <strong>Études en France</strong> après validation. Si pas encore disponible, contacte directement la scolarité de l\'UFR Sciences & Techniques de Besançon.',g:['req']},
-{id:'cf3',t:'Formulaire France-Visas rempli + signé (2 exemplaires)',d:'Formulaire officiel de demande de visa long séjour mention "étudiant". Doit être rempli en ligne, imprimé et signé à la main avec un stylo noir.',h:'Remplir sur <strong><a href="https://france-visas.gouv.fr">france-visas.gouv.fr</a></strong> → Assistant visa → Long séjour → Étudiant → Algérie. Imprime 2 copies. Signe à la main.',g:['req']},
-]},
+  <div class="container">
+    <h1 class="page-title">Dossier Visa Étudiant — M2 Besançon</h1>
+    <p class="page-sub">Université Marie et Louis Pasteur &nbsp;·&nbsp; M2 Systèmes Logiciels &nbsp;·&nbsp; Checklist
+      exhaustive avec instructions</p>
+    <div class="rdv-badge">📅 RDV CAPAGO : 8 juin 2025</div>
+    <div class="prog-wrap">
+      <div class="prog-bar" id="pbar" style="width:0%"></div>
+    </div>
+    <div class="prog-lbl" id="plbl">0 / 0 cochés</div>
+    <div class="top-actions">
+      <span class="reset-btn" onclick="resetAll()">↺ Réinitialiser</span>
+      <span class="expand-all" onclick="expandAll()">⊞ Tout ouvrir</span>
+      <span class="reset-btn" onclick="exportState()">💾 Exporter État</span>
+      <label class="reset-btn" for="import-file" style="cursor:pointer;">📁 Importer État</label>
+      <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importState(event)">
+    </div>
+    <div id="app"></div>
+  </div>
+  <script>
+    var SECS = [
+      /* ─── 1. CAMPUS FRANCE ─── */
+      {
+        id: 'cf', ico: '🎓', bg: '#eff6ff', nm: 'Campus France — Documents officiels', badge: { t: 'Obligatoire', c: 'b-red' },
+        note: { t: '<strong>Important :</strong> Après ton RDV de vérification mercredi, ton message de fin de procédure sera envoyé automatiquement par email. <strong>Surveille ta boîte mail</strong> dès mercredi soir. CAPAGO t\'enverra ensuite automatiquement une confirmation de RDV (certaines années). Ton RDV du 8 juin est déjà fixé — garde-le.', c: 'n-blu' },
+        items: [
+          { id: 'cf1', t: 'Message de fin de procédure Campus France', d: 'Email envoyé automatiquement après validation de l\'authentification de tes diplômes. À imprimer et joindre OBLIGATOIREMENT. Sans ce document, le dossier visa est incomplet.', h: 'Attendu après le RDV de vérification de mercredi. Vérifie sur ton compte <strong>etudes-en-france.fr</strong> rubrique "mon dossier". Imprime en 2 exemplaires.', g: ['req', 'Après mercredi'] },
+          { id: 'cf2', t: 'Attestation de préinscription / d\'admission M2', d: 'Document officiel de l\'Université Marie et Louis Pasteur confirmant ton inscription au M2 Systèmes Logiciels.', h: 'Téléchargeable sur ton compte <strong>Études en France</strong> après validation. Si pas encore disponible, contacte directement la scolarité de l\'UFR Sciences & Techniques de Besançon.', g: ['req'] },
+          { id: 'cf3', t: 'Formulaire France-Visas rempli + signé (2 exemplaires)', d: 'Formulaire officiel de demande de visa long séjour mention "étudiant". Doit être rempli en ligne, imprimé et signé à la main avec un stylo noir.', h: 'Remplir sur <strong><a href="https://france-visas.gouv.fr">france-visas.gouv.fr</a></strong> → Assistant visa → Long séjour → Étudiant → Algérie. Imprime 2 copies. Signe à la main.', g: ['req'] },
+        ]
+      },
 
-/* ─── 2. DIPLOMES + AUTH ─── */
-{id:'au',ico:'📜',bg:'#fffbeb',nm:'Diplômes & Authentification',badge:{t:'En cours',c:'b-amb'},
-note:{t:'🎉 <strong>MAE Constantine = NON OBLIGATOIRE pour le visa France.</strong> Article 36 du protocole judiciaire franco-algérien de 1962 : documents algériens → France sont exemptés de légalisation. Le MAE est utile pour d\'autres pays ou si l\'université l\'exige à l\'inscription. <strong>Pour le visa : tu n\'en as pas besoin.</strong>',c:'n-grn'},
-chain:true,
-items:[
-{id:'au1',t:'Diplôme universitaire — original authentifié (à récupérer dimanche)',d:'Campus France a effectué l\'authentification. À retirer ce dimanche. Indispensable pour le visa.',h:'Récupère l\'<strong>original</strong> + fais immédiatement 3 photocopies certifiées conformes (à la mairie ou par un notaire). Garde l\'original dans une pochette plastique.',g:['req','Dimanche']},
-{id:'au2',t:'Bac original — déjà retiré ✓',d:'Valide pour Campus France. À conserver précieusement pour tout le dossier.',h:'Déjà en ta possession. Fais 2 copies certifiées conformes si pas encore fait.',g:['don']},
-{id:'au3',t:'Relevés de notes universitaires (toutes les années)',d:'Depuis la L1 (1ère année) jusqu\'au dernier diplôme. Chaque année compte. Si certains sont uniquement en arabe, une traduction assermentée est nécessaire.',h:'<strong>Où les obtenir :</strong> Service de scolarité de ton université algérienne. Demande les originaux ou copies certifiées. Si en arabe → traducteur assermenté (liste disponible à la mairie de wilaya).',g:['req']},
-{id:'au4',t:'Attestation de réussite / diplôme provisoire (si applicable)',d:'Si le diplôme définitif n\'est pas encore prêt, l\'attestation provisoire est acceptée provisoirement.',h:'Demander au service de scolarité de l\'université. Doit mentionner l\'année, la mention et la filière.',g:['opt']},
-{id:'au5',t:'MAE Constantine — légalisation OPTIONNELLE / après visa',d:'Pas requis pour le visa France. Utile si l\'université de Besançon l\'exige à l\'inscription physique.',h:'Si nécessaire après visa : Annexe régionale MAE à Constantine, ou par courrier via service T@SDIK (bureaux de poste de chef-lieu de daïra). Timbre fiscal 20 DA par document.',g:['opt','Après visa']},
-]},
+      /* ─── 2. DIPLOMES + AUTH ─── */
+      {
+        id: 'au', ico: '📜', bg: '#fffbeb', nm: 'Diplômes & Authentification', badge: { t: 'En cours', c: 'b-amb' },
+        note: { t: '🎉 <strong>MAE Constantine = NON OBLIGATOIRE pour le visa France.</strong> Article 36 du protocole judiciaire franco-algérien de 1962 : documents algériens → France sont exemptés de légalisation. Le MAE est utile pour d\'autres pays ou si l\'université l\'exige à l\'inscription. <strong>Pour le visa : tu n\'en as pas besoin.</strong>', c: 'n-grn' },
+        chain: true,
+        items: [
+          { id: 'au1', t: 'Diplôme universitaire — original authentifié (à récupérer dimanche)', d: 'Campus France a effectué l\'authentification. À retirer ce dimanche. Indispensable pour le visa.', h: 'Récupère l\'<strong>original</strong> + fais immédiatement 3 photocopies certifiées conformes (à la mairie ou par un notaire). Garde l\'original dans une pochette plastique.', g: ['req', 'Dimanche'] },
+          { id: 'au2', t: 'Bac original — déjà retiré ✓', d: 'Valide pour Campus France. À conserver précieusement pour tout le dossier.', h: 'Déjà en ta possession. Fais 2 copies certifiées conformes si pas encore fait.', g: ['don'] },
+          { id: 'au3', t: 'Relevés de notes universitaires (toutes les années)', d: 'Depuis la L1 (1ère année) jusqu\'au dernier diplôme. Chaque année compte. Si certains sont uniquement en arabe, une traduction assermentée est nécessaire.', h: '<strong>Où les obtenir :</strong> Service de scolarité de ton université algérienne. Demande les originaux ou copies certifiées. Si en arabe → traducteur assermenté (liste disponible à la mairie de wilaya).', g: ['req'] },
+          { id: 'au4', t: 'Attestation de réussite / diplôme provisoire (si applicable)', d: 'Si le diplôme définitif n\'est pas encore prêt, l\'attestation provisoire est acceptée provisoirement.', h: 'Demander au service de scolarité de l\'université. Doit mentionner l\'année, la mention et la filière.', g: ['opt'] },
+          { id: 'au5', t: 'MAE Constantine — légalisation OPTIONNELLE / après visa', d: 'Pas requis pour le visa France. Utile si l\'université de Besançon l\'exige à l\'inscription physique.', h: 'Si nécessaire après visa : Annexe régionale MAE à Constantine, ou par courrier via service T@SDIK (bureaux de poste de chef-lieu de daïra). Timbre fiscal 20 DA par document.', g: ['opt', 'Après visa'] },
+        ]
+      },
 
-/* ─── 3. IDENTITÉ CIVILE ─── */
-{id:'id',ico:'🪪',bg:'#f0fdf4',nm:'Identité & Documents civils',badge:{t:'À préparer',c:'b-amb'},
-items:[
-{id:'id1',t:'Passeport en cours de validité — original + photocopies',d:'Validité minimum : date de fin de visa + 3 mois. Doit avoir au moins 2 pages vierges pour les visas.',h:'Photocopier <strong>toutes</strong> les pages : les 5 premières (photo, état civil, numéro) + toutes pages avec tampons, visas anciens, cachets d\'entrée/sortie. Fais 2 jeux complets de copies.',g:['req']},
-{id:'id2',t:'2 photos d\'identité aux normes OACI',d:'35×45 mm, fond blanc uni, visage dégagé et centré, yeux ouverts, expression neutre. Récentes (moins de 3 mois).',h:'Photographe professionnel recommandé ou cabine photo agréée. Évite les selfies. Pas de lunettes, pas de chapeau. Les 2 photos doivent être identiques.',g:['req']},
-{id:'id3',t:'Acte de naissance — extrait avec filiation',d:'Original + copie. Si en arabe uniquement : traduction assermentée en français OBLIGATOIRE.',h:'<strong>Où l\'obtenir :</strong> Service d\'état civil de la mairie (APC) de ta commune de naissance. Demande un extrait "avec filiation" (mentionne prénom/nom des parents). Si en arabe → traducteur assermenté.',g:['req']},
-{id:'id4',t:'Fiche familiale d\'état civil',d:'Document civil algérien regroupant tous les membres de la famille. Utile pour prouver le lien fraternel et donc le lien avec la belle-sœur garante.',h:'<strong>Où l\'obtenir :</strong> Mairie (APC) de ton domicile familial, service d\'état civil. Gratuit. Délivré sur présentation du livret de famille ou extrait de naissance.',g:['req']},
-{id:'id5',t:'Casier judiciaire bulletin n°3 — extrait vierge',d:'Extrait de casier judiciaire prouvant l\'absence de condamnation pénale. Peut être exigé par le consulat pour tout visa long séjour.',h:'<strong>Option 1 (en ligne, gratuit) :</strong> <a href="https://www.justice.gov.dz">justice.gov.dz</a> → demande de bulletin n°3 en ligne → retirer ensuite au tribunal de première instance de ta wilaya.\n<strong>Option 2 (en personne) :</strong> Tribunal de 1ère instance compétent, avec CNI + extrait de naissance + timbre fiscal 30 DA.\n<strong>Délai :</strong> 24h-72h. Gratuit sur internet.',g:['req']},
-]},
+      /* ─── 3. IDENTITÉ CIVILE ─── */
+      {
+        id: 'id', ico: '🪪', bg: '#f0fdf4', nm: 'Identité & Documents civils', badge: { t: 'À préparer', c: 'b-amb' },
+        items: [
+          { id: 'id1', t: 'Passeport en cours de validité — original + photocopies', d: 'Validité minimum : date de fin de visa + 3 mois. Doit avoir au moins 2 pages vierges pour les visas.', h: 'Photocopier <strong>toutes</strong> les pages : les 5 premières (photo, état civil, numéro) + toutes pages avec tampons, visas anciens, cachets d\'entrée/sortie. Fais 2 jeux complets de copies.', g: ['req'] },
+          { id: 'id2', t: '2 photos d\'identité aux normes OACI', d: '35×45 mm, fond blanc uni, visage dégagé et centré, yeux ouverts, expression neutre. Récentes (moins de 3 mois).', h: 'Photographe professionnel recommandé ou cabine photo agréée. Évite les selfies. Pas de lunettes, pas de chapeau. Les 2 photos doivent être identiques.', g: ['req'] },
+          { id: 'id3', t: 'Acte de naissance — extrait avec filiation', d: 'Original + copie. Si en arabe uniquement : traduction assermentée en français OBLIGATOIRE.', h: '<strong>Où l\'obtenir :</strong> Service d\'état civil de la mairie (APC) de ta commune de naissance. Demande un extrait "avec filiation" (mentionne prénom/nom des parents). Si en arabe → traducteur assermenté.', g: ['req'] },
+          { id: 'id4', t: 'Fiche familiale d\'état civil', d: 'Document civil algérien regroupant tous les membres de la famille. Utile pour prouver le lien fraternel et donc le lien avec la belle-sœur garante.', h: '<strong>Où l\'obtenir :</strong> Mairie (APC) de ton domicile familial, service d\'état civil. Gratuit. Délivré sur présentation du livret de famille ou extrait de naissance.', g: ['req'] },
+          { id: 'id5', t: 'Casier judiciaire bulletin n°3 — extrait vierge', d: 'Extrait de casier judiciaire prouvant l\'absence de condamnation pénale. Peut être exigé par le consulat pour tout visa long séjour.', h: '<strong>Option 1 (en ligne, gratuit) :</strong> <a href="https://www.justice.gov.dz">justice.gov.dz</a> → demande de bulletin n°3 en ligne → retirer ensuite au tribunal de première instance de ta wilaya.\n<strong>Option 2 (en personne) :</strong> Tribunal de 1ère instance compétent, avec CNI + extrait de naissance + timbre fiscal 30 DA.\n<strong>Délai :</strong> 24h-72h. Gratuit sur internet.', g: ['req'] },
+        ]
+      },
 
-/* ─── 4. FINANCES ─── */
-{id:'fi',ico:'💰',bg:'#faf5ff',nm:'Ressources financières personnelles — CCP + Salaire',badge:{t:'Attention — 2 mois',c:'b-amb'},
-note:{t:'<strong>Situation réelle :</strong> tu travailles depuis 2 mois, tes relevés sont sur CCP (compte courant postal algérien = compte officiel, parfaitement accepté). Tu auras au mieux 2 bulletins et 2 relevés. C\'est peu mais c\'est honnête. <strong>La stratégie :</strong> présente tout ce que tu as + explique clairement dans ta lettre + compense avec tes garants. Le consulat accepte les situations de début d\'emploi si le dossier est bien construit.',c:'n-amb'},
-items:[
-{id:'fi1',t:'Attestation de travail / d\'emploi (employeur)',d:'Document officiel de ton employeur confirmant ta situation professionnelle actuelle.',h:'<strong>Demander à ton employeur :</strong> lettre sur papier en-tête avec cachet + signature du responsable RH ou directeur. Doit mentionner : ton nom complet, intitulé du poste, date de prise de fonction, salaire mensuel brut. Délai : 24-48h.',g:['req']},
-{id:'fi2',t:'Bulletins de salaire disponibles (1 ou 2 mois)',d:'Tous les bulletins que tu as. Même 1 seul mois est mieux que rien. Le consulat voit que l\'emploi est récent.',h:'Tes bulletins de salaire papier. Présente-les TOUS. Mentionne dans ta lettre explicative que l\'emploi a débuté en [mois] et que le M2 était déjà prévu avant de débuter cet emploi.',g:['req']},
-{id:'fi3',t:'Relevés de compte CCP — tous mois disponibles',d:'Tes relevés du compte courant postal algérien (Algérie Poste). 1-2 mois suffisent dans ton contexte.',h:'<strong>Où les obtenir :</strong> Demander au bureau de poste où ton CCP est domicilié (relevé mensuel imprimé) OU télécharger via <strong>Baridimob / BaridiWeb</strong> (appli Algérie Poste en ligne). Imprimer en qualité propre.',g:['req']},
-{id:'fi4',t:'CV complet et actualisé',d:'OBLIGATOIRE réglementairement quand on reprend des études après une activité professionnelle.',h:'Format A4, 1-2 pages max, en français. Inclure : formation académique, expérience pro actuelle (2 mois), compétences techniques liées au M2 Systèmes Logiciels. Signe et date le CV.',g:['req']},
-]},
+      /* ─── 4. FINANCES ─── */
+      {
+        id: 'fi', ico: '💰', bg: '#faf5ff', nm: 'Ressources financières personnelles — CCP + Salaire', badge: { t: 'Attention — 2 mois', c: 'b-amb' },
+        note: { t: '<strong>Situation réelle :</strong> tu travailles depuis 2 mois, tes relevés sont sur CCP (compte courant postal algérien = compte officiel, parfaitement accepté). Tu auras au mieux 2 bulletins et 2 relevés. C\'est peu mais c\'est honnête. <strong>La stratégie :</strong> présente tout ce que tu as + explique clairement dans ta lettre + compense avec tes garants. Le consulat accepte les situations de début d\'emploi si le dossier est bien construit.', c: 'n-amb' },
+        items: [
+          { id: 'fi1', t: 'Attestation de travail / d\'emploi (employeur)', d: 'Document officiel de ton employeur confirmant ta situation professionnelle actuelle.', h: '<strong>Demander à ton employeur :</strong> lettre sur papier en-tête avec cachet + signature du responsable RH ou directeur. Doit mentionner : ton nom complet, intitulé du poste, date de prise de fonction, salaire mensuel brut. Délai : 24-48h.', g: ['req'] },
+          { id: 'fi2', t: 'Bulletins de salaire disponibles (1 ou 2 mois)', d: 'Tous les bulletins que tu as. Même 1 seul mois est mieux que rien. Le consulat voit que l\'emploi est récent.', h: 'Tes bulletins de salaire papier. Présente-les TOUS. Mentionne dans ta lettre explicative que l\'emploi a débuté en [mois] et que le M2 était déjà prévu avant de débuter cet emploi.', g: ['req'] },
+          { id: 'fi3', t: 'Relevés de compte CCP — tous mois disponibles', d: 'Tes relevés du compte courant postal algérien (Algérie Poste). 1-2 mois suffisent dans ton contexte.', h: '<strong>Où les obtenir :</strong> Demander au bureau de poste où ton CCP est domicilié (relevé mensuel imprimé) OU télécharger via <strong>Baridimob / BaridiWeb</strong> (appli Algérie Poste en ligne). Imprimer en qualité propre.', g: ['req'] },
+          { id: 'fi4', t: 'CV complet et actualisé', d: 'OBLIGATOIRE réglementairement quand on reprend des études après une activité professionnelle.', h: 'Format A4, 1-2 pages max, en français. Inclure : formation académique, expérience pro actuelle (2 mois), compétences techniques liées au M2 Systèmes Logiciels. Signe et date le CV.', g: ['req'] },
+        ]
+      },
 
-/* ─── 5. GARANT FRANCE ─── */
-{id:'gfr',ico:'🗼',bg:'#f0fdf4',nm:'Garant France — Belle-sœur (épouse du frère, Paris)',badge:{t:'Pièce maîtresse',c:'b-grn'},
-note:{t:'<strong>Ta belle-sœur est ton garant principal.</strong> Elle doit prouver ≥ 615€/mois de ressources. Le lien familial doit être documenté par une chaîne de preuves solide. L\'attestation de prise en charge doit être légalisée à la mairie de Paris (gratuit sur RDV sur paris.fr) ou chez un notaire parisien.',c:'n-grn'},
-items:[
-{id:'gf1',t:'Attestation de prise en charge (PEC) — belle-sœur',d:'Document central du garant. Elle s\'engage à couvrir logement, subsistance, études et rapatriement pour l\'année entière.',h:'<strong>Rédiger soi-même ou modèle en ligne.</strong> Contenu obligatoire : ses nom/prénom/adresse Paris, ton nom/prénom/nationalité, lien familial précis ("épouse de mon beau-frère"), engagement financier explicite mentionnant 615€/mois minimum, durée (année universitaire 2025-2026).\n<strong>Légaliser :</strong> Mairie de l\'arrondissement parisien → service état civil (RDV sur paris.fr) → cachet mairie. OU notaire.',g:['req']},
-{id:'gf2',t:'3 derniers bulletins de salaire (belle-sœur)',d:'3 bulletins mensuels de son emploi en France. Salaire net ≥ 615€/mois visible.',h:'La belle-sœur les demande à son employeur ou les récupère sur son espace RH/paie en ligne. Envoie-les toi par WeTransfer ou WhatsApp en haute qualité pour imprimer. Originaux ou copies certifiées.',g:['req']},
-{id:'gf3',t:'3 derniers relevés bancaires (belle-sœur)',d:'Relevés de son compte personnel à Paris. Mouvements cohérents avec les bulletins. Montants visibles.',h:'Téléchargeables depuis son espace bancaire en ligne (BNP, Société Générale, La Banque Postale...) → relevés PDF. Imprimer. Les 3 derniers mois (mars, avril, mai 2025).',g:['req']},
-{id:'gf4',t:'Pièce d\'identité de la belle-sœur (recto-verso)',d:'CNI française, passeport ou titre de séjour en cours de validité.',h:'Copie recto-verso lisible. Si titre de séjour : vérifier que la validité couvre bien l\'année universitaire 2025-2026.',g:['req']},
-{id:'gf5',t:'Justificatif de domicile — belle-sœur (Paris, < 3 mois)',d:'Prouve qu\'elle réside bien à Paris.',h:'Facture EDF, GDF, téléphonie fixe, eau, ou avis d\'imposition 2024. La facture doit dater de moins de 3 mois et mentionner l\'adresse parisienne complète. Si colocation : attestation d\'hébergement signée + facture du titulaire du bail + copie CNI du titulaire.',g:['req']},
-{id:'gf6',t:'Avis d\'imposition 2024 (belle-sœur)',d:'Confirme les revenus annuels déclarés à l\'administration fiscale française.',h:'Disponible sur <strong>impots.gouv.fr</strong> → Mon espace → Consulter mes documents. Télécharger le PDF "Avis d\'imposition 2024 sur revenus 2023". Imprimer.',g:['req']},
-{id:'gf7',t:'Justificatif du lien de parenté (chaîne documentaire)',d:'Prouver que la belle-sœur est bien l\'épouse de ton frère, et que c\'est bien ton frère.',h:'<strong>Chaîne à assembler :</strong>\n1️⃣ Ton acte de naissance (avec prénom/nom de tes parents)\n2️⃣ Acte de naissance de ton frère (mêmes parents → lien fraternel)\n3️⃣ Acte de mariage du frère (nomme la belle-sœur → lien conjugal)\n→ Ces 3 documents assemblés prouvent que la belle-sœur est ta belle-sœur. La fiche familiale d\'état civil peut remplacer/compléter les points 1+2.',g:['req']},
-{id:'gf8',t:'Acte de mariage du frère (original ou copie)',d:'Prouve que la belle-sœur est légalement l\'épouse de ton frère.',h:'<strong>En Algérie :</strong> registre d\'état civil de la mairie (APC) du lieu de mariage. Si mariage en France : mairie française compétente. Si en arabe → traduction assermentée.',g:['req']},
-]},
+      /* ─── 5. GARANT FRANCE ─── */
+      {
+        id: 'gfr', ico: '🗼', bg: '#f0fdf4', nm: 'Garant France — Belle-sœur (épouse du frère, Paris)', badge: { t: 'Pièce maîtresse', c: 'b-grn' },
+        note: { t: '<strong>Ta belle-sœur est ton garant principal.</strong> Elle doit prouver ≥ 615€/mois de ressources. Le lien familial doit être documenté par une chaîne de preuves solide. L\'attestation de prise en charge doit être légalisée à la mairie de Paris (gratuit sur RDV sur paris.fr) ou chez un notaire parisien.', c: 'n-grn' },
+        items: [
+          { id: 'gf1', t: 'Attestation de prise en charge (PEC) — belle-sœur', d: 'Document central du garant. Elle s\'engage à couvrir logement, subsistance, études et rapatriement pour l\'année entière.', h: '<strong>Rédiger soi-même ou modèle en ligne.</strong> Contenu obligatoire : ses nom/prénom/adresse Paris, ton nom/prénom/nationalité, lien familial précis ("épouse de mon beau-frère"), engagement financier explicite mentionnant 615€/mois minimum, durée (année universitaire 2025-2026).\n<strong>Légaliser :</strong> Mairie de l\'arrondissement parisien → service état civil (RDV sur paris.fr) → cachet mairie. OU notaire.', g: ['req'] },
+          { id: 'gf2', t: '3 derniers bulletins de salaire (belle-sœur)', d: '3 bulletins mensuels de son emploi en France. Salaire net ≥ 615€/mois visible.', h: 'La belle-sœur les demande à son employeur ou les récupère sur son espace RH/paie en ligne. Envoie-les toi par WeTransfer ou WhatsApp en haute qualité pour imprimer. Originaux ou copies certifiées.', g: ['req'] },
+          { id: 'gf3', t: '3 derniers relevés bancaires (belle-sœur)', d: 'Relevés de son compte personnel à Paris. Mouvements cohérents avec les bulletins. Montants visibles.', h: 'Téléchargeables depuis son espace bancaire en ligne (BNP, Société Générale, La Banque Postale...) → relevés PDF. Imprimer. Les 3 derniers mois (mars, avril, mai 2025).', g: ['req'] },
+          { id: 'gf4', t: 'Pièce d\'identité de la belle-sœur (recto-verso)', d: 'CNI française, passeport ou titre de séjour en cours de validité.', h: 'Copie recto-verso lisible. Si titre de séjour : vérifier que la validité couvre bien l\'année universitaire 2025-2026.', g: ['req'] },
+          { id: 'gf5', t: 'Justificatif de domicile — belle-sœur (Paris, < 3 mois)', d: 'Prouve qu\'elle réside bien à Paris.', h: 'Facture EDF, GDF, téléphonie fixe, eau, ou avis d\'imposition 2024. La facture doit dater de moins de 3 mois et mentionner l\'adresse parisienne complète. Si colocation : attestation d\'hébergement signée + facture du titulaire du bail + copie CNI du titulaire.', g: ['req'] },
+          { id: 'gf6', t: 'Avis d\'imposition 2024 (belle-sœur)', d: 'Confirme les revenus annuels déclarés à l\'administration fiscale française.', h: 'Disponible sur <strong>impots.gouv.fr</strong> → Mon espace → Consulter mes documents. Télécharger le PDF "Avis d\'imposition 2024 sur revenus 2023". Imprimer.', g: ['req'] },
+          { id: 'gf7', t: 'Justificatif du lien de parenté (chaîne documentaire)', d: 'Prouver que la belle-sœur est bien l\'épouse de ton frère, et que c\'est bien ton frère.', h: '<strong>Chaîne à assembler :</strong>\n1️⃣ Ton acte de naissance (avec prénom/nom de tes parents)\n2️⃣ Acte de naissance de ton frère (mêmes parents → lien fraternel)\n3️⃣ Acte de mariage du frère (nomme la belle-sœur → lien conjugal)\n→ Ces 3 documents assemblés prouvent que la belle-sœur est ta belle-sœur. La fiche familiale d\'état civil peut remplacer/compléter les points 1+2.', g: ['req'] },
+          { id: 'gf8', t: 'Acte de mariage du frère (original ou copie)', d: 'Prouve que la belle-sœur est légalement l\'épouse de ton frère.', h: '<strong>En Algérie :</strong> registre d\'état civil de la mairie (APC) du lieu de mariage. Si mariage en France : mairie française compétente. Si en arabe → traduction assermentée.', g: ['req'] },
+        ]
+      },
 
-/* ─── 6. GARANT ALGÉRIE ─── */
-{id:'gdz',ico:'🌙',bg:'#fff7ed',nm:'Garant Algérie — Parent retraité (60 000 DA/mois)',badge:{t:'Fortement recommandé',c:'b-blu'},
-note:{t:'<strong>Pas obligatoire mais très conseillé</strong> dans ton cas (emploi de 2 mois). 60 000 DA ≈ 415€/mois est un complément crédible. Combiné à ta belle-sœur à Paris, le dossier financier devient extrêmement solide. Le consulat apprécie avoir deux niveaux de garantie.',c:'n-blu'},
-items:[
-{id:'gd1',t:'Attestation de prise en charge (parent retraité)',d:'Le parent s\'engage à contribuer financièrement à tes études et subsistance.',h:'Rédiger ensemble. Doit mentionner : identité du parent, identité, engagement, montant de retraite mensuelle. <strong>Légaliser à l\'APC</strong> (mairie algérienne) du domicile du parent → cachet + signature du maire ou agent délégué. Timbre fiscal 200 DA.',g:['opt']},
-{id:'gd2',t:'Attestation de pension de retraite (CNAS / CNR)',d:'Document officiel prouvant le montant mensuel exact de la retraite.',h:'<strong>Où obtenir :</strong> Bureau CNAS ou CNR (Caisse Nationale de Retraite) du lieu de domicile du parent. Se présenter avec sa CNI. Demander une "attestation de pension" ou "attestation de droits". Gratuit.',g:['opt']},
-{id:'gd3',t:'Relevés CCP du parent (3 derniers mois)',d:'Montrent les virements de pension réguliers sur son compte.',h:'Même procédure que toi : bureau de poste du CCP domicilié ou BaridiWeb. Vérifier que les virements CNAS/CNR sont bien visibles chaque mois.',g:['opt']},
-{id:'gd4',t:'CNI ou passeport du parent garant',d:'Pièce d\'identité en cours de validité.',h:'Copie recto-verso lisible. CNI ou passeport. Vérifier la date d\'expiration.',g:['opt']},
-]},
+      /* ─── 6. GARANT ALGÉRIE ─── */
+      {
+        id: 'gdz', ico: '🌙', bg: '#fff7ed', nm: 'Garant Algérie — Parent retraité (60 000 DA/mois)', badge: { t: 'Fortement recommandé', c: 'b-blu' },
+        note: { t: '<strong>Pas obligatoire mais très conseillé</strong> dans ton cas (emploi de 2 mois). 60 000 DA ≈ 415€/mois est un complément crédible. Combiné à ta belle-sœur à Paris, le dossier financier devient extrêmement solide. Le consulat apprécie avoir deux niveaux de garantie.', c: 'n-blu' },
+        items: [
+          { id: 'gd1', t: 'Attestation de prise en charge (parent retraité)', d: 'Le parent s\'engage à contribuer financièrement à tes études et subsistance.', h: 'Rédiger ensemble. Doit mentionner : identité du parent, identité, engagement, montant de retraite mensuelle. <strong>Légaliser à l\'APC</strong> (mairie algérienne) du domicile du parent → cachet + signature du maire ou agent délégué. Timbre fiscal 200 DA.', g: ['opt'] },
+          { id: 'gd2', t: 'Attestation de pension de retraite (CNAS / CNR)', d: 'Document officiel prouvant le montant mensuel exact de la retraite.', h: '<strong>Où obtenir :</strong> Bureau CNAS ou CNR (Caisse Nationale de Retraite) du lieu de domicile du parent. Se présenter avec sa CNI. Demander une "attestation de pension" ou "attestation de droits". Gratuit.', g: ['opt'] },
+          { id: 'gd3', t: 'Relevés CCP du parent (3 derniers mois)', d: 'Montrent les virements de pension réguliers sur son compte.', h: 'Même procédure que toi : bureau de poste du CCP domicilié ou BaridiWeb. Vérifier que les virements CNAS/CNR sont bien visibles chaque mois.', g: ['opt'] },
+          { id: 'gd4', t: 'CNI ou passeport du parent garant', d: 'Pièce d\'identité en cours de validité.', h: 'Copie recto-verso lisible. CNI ou passeport. Vérifier la date d\'expiration.', g: ['opt'] },
+        ]
+      },
 
-/* ─── 7. CASIER + SANTÉ ─── */
-{id:'cas',ico:'🏥',bg:'#fdf4ff',nm:'Casier judiciaire & Assurance santé',badge:{t:'Souvent oublié',c:'b-red'},
-note:{t:'<strong>Ces 2 documents sont régulièrement oubliés</strong> par les étudiants et provoquent des dossiers incomplets. L\'assurance santé est obligatoire pour le visa long séjour. Le casier judiciaire peut être demandé par le consul.',c:'n-red'},
-items:[
-{id:'cas1',t:'Casier judiciaire algérien — Bulletin n°3 (vierge)',d:'Prouve l\'absence de condamnation pénale. Requis pour visa long séjour.',h:'<strong>En ligne (recommandé, gratuit) :</strong> <a href="https://www.mjustice.dz">mjustice.dz</a> → Services en ligne → Casier judiciaire → Bulletin n°3. Remplir le formulaire → choisir tribunal de retrait → se présenter 24-72h après avec CNI.\n<strong>En personne :</strong> Tribunal de 1ère instance de ta wilaya. CNI + acte de naissance + timbre 30 DA.\n<strong>Traduction :</strong> si en arabe → traducteur assermenté français.',g:['req']},
-{id:'cas2',t:'Assurance maladie / santé pour la durée du séjour',d:'Couverture obligatoire pour visa long séjour. Doit couvrir : soins médicaux, hospitalisation, et rapatriement sanitaire. Minimum recommandé : 30 000€ de couverture.',h:'<strong>Option 1 — Assurance voyage/expatrié algérienne :</strong> SAA, CAAR, Alliance Assurances → demander une assurance "étudiant à l\'étranger" 12 mois couvrant France + espace Schengen.\n<strong>Option 2 — Assurance internationale en ligne :</strong> Mondassur, April International, Axa Assistance → formule étudiant international.\n<strong>Prix :</strong> environ 100-200€/an selon formule.\n<strong>Note :</strong> en France, la Sécurité Sociale étudiante sera gratuite et obligatoire dès l\'inscription universitaire — elle remplacera cette assurance.',g:['req']},
-]},
+      /* ─── 7. CASIER + SANTÉ ─── */
+      {
+        id: 'cas', ico: '🏥', bg: '#fdf4ff', nm: 'Casier judiciaire & Assurance santé', badge: { t: 'Souvent oublié', c: 'b-red' },
+        note: { t: '<strong>Ces 2 documents sont régulièrement oubliés</strong> par les étudiants et provoquent des dossiers incomplets. L\'assurance santé est obligatoire pour le visa long séjour. Le casier judiciaire peut être demandé par le consul.', c: 'n-red' },
+        items: [
+          { id: 'cas1', t: 'Casier judiciaire algérien — Bulletin n°3 (vierge)', d: 'Prouve l\'absence de condamnation pénale. Requis pour visa long séjour.', h: '<strong>En ligne (recommandé, gratuit) :</strong> <a href="https://www.mjustice.dz">mjustice.dz</a> → Services en ligne → Casier judiciaire → Bulletin n°3. Remplir le formulaire → choisir tribunal de retrait → se présenter 24-72h après avec CNI.\n<strong>En personne :</strong> Tribunal de 1ère instance de ta wilaya. CNI + acte de naissance + timbre 30 DA.\n<strong>Traduction :</strong> si en arabe → traducteur assermenté français.', g: ['req'] },
+          { id: 'cas2', t: 'Assurance maladie / santé pour la durée du séjour', d: 'Couverture obligatoire pour visa long séjour. Doit couvrir : soins médicaux, hospitalisation, et rapatriement sanitaire. Minimum recommandé : 30 000€ de couverture.', h: '<strong>Option 1 — Assurance voyage/expatrié algérienne :</strong> SAA, CAAR, Alliance Assurances → demander une assurance "étudiant à l\'étranger" 12 mois couvrant France + espace Schengen.\n<strong>Option 2 — Assurance internationale en ligne :</strong> Mondassur, April International, Axa Assistance → formule étudiant international.\n<strong>Prix :</strong> environ 100-200€/an selon formule.\n<strong>Note :</strong> en France, la Sécurité Sociale étudiante sera gratuite et obligatoire dès l\'inscription universitaire — elle remplacera cette assurance.', g: ['req'] },
+        ]
+      },
 
-/* ─── 8. HÉBERGEMENT ─── */
-{id:'lgt',ico:'🏨',bg:'#eff6ff',nm:'Hébergement — Hôtel + Plan logement',badge:{t:'Hôtel réservé ✓',c:'b-grn'},
-note:{t:'<strong>CROUS et visa :</strong> la phase complémentaire CROUS ouvre le 7 juillet — impossible d\'avoir une confirmation CROUS avant ton RDV du 8 juin. Ce n\'est pas un problème : ta réservation hôtel Agoda + lettre explicative est parfaitement acceptée par le consulat France-Visas. Mentionne clairement dans ta lettre que tu feras la demande CROUS dès juillet.',c:'n-amb'},
-items:[
-{id:'lo1',t:'Confirmation de réservation hôtel Besançon — Agoda ✓',d:'Déjà fait. Document à présenter au consulat comme justificatif d\'hébergement provisoire.',h:'Imprimer la confirmation Agoda (email + PDF). Vérifier que la confirmation mentionne : ton nom, nom de l\'hôtel, adresse à Besançon (25000), dates d\'arrivée et départ. Prendre de préférence une réservation annulable.',g:['don']},
-{id:'lo2',t:'Lettre explicative hébergement (intégrée dans lettre globale)',d:'Le consulat veut un plan d\'hébergement crédible, pas forcément un bail signé.',h:'Rédiger dans la lettre explicative : "hôtel réservé à Besançon pour l\'arrivée. Demande CROUS prévue dès l\'ouverture le 7 juillet 2025. Recherche active de résidences étudiantes privées et colocations. Contact avec le service logement de l\'Université prévu dès l\'arrivée."',g:['req']},
-]},
+      /* ─── 8. HÉBERGEMENT ─── */
+      {
+        id: 'lgt', ico: '🏨', bg: '#eff6ff', nm: 'Hébergement — Hôtel + Plan logement', badge: { t: 'Hôtel réservé ✓', c: 'b-grn' },
+        note: { t: '<strong>CROUS et visa :</strong> la phase complémentaire CROUS ouvre le 7 juillet — impossible d\'avoir une confirmation CROUS avant ton RDV du 8 juin. Ce n\'est pas un problème : ta réservation hôtel Agoda + lettre explicative est parfaitement acceptée par le consulat France-Visas. Mentionne clairement dans ta lettre que tu feras la demande CROUS dès juillet.', c: 'n-amb' },
+        items: [
+          { id: 'lo1', t: 'Confirmation de réservation hôtel Besançon — Agoda ✓', d: 'Déjà fait. Document à présenter au consulat comme justificatif d\'hébergement provisoire.', h: 'Imprimer la confirmation Agoda (email + PDF). Vérifier que la confirmation mentionne : ton nom, nom de l\'hôtel, adresse à Besançon (25000), dates d\'arrivée et départ. Prendre de préférence une réservation annulable.', g: ['don'] },
+          { id: 'lo2', t: 'Lettre explicative hébergement (intégrée dans lettre globale)', d: 'Le consulat veut un plan d\'hébergement crédible, pas forcément un bail signé.', h: 'Rédiger dans la lettre explicative : "hôtel réservé à Besançon pour l\'arrivée. Demande CROUS prévue dès l\'ouverture le 7 juillet 2025. Recherche active de résidences étudiantes privées et colocations. Contact avec le service logement de l\'Université prévu dès l\'arrivée."', g: ['req'] },
+        ]
+      },
 
-/* ─── 9. CROUS ─── */
-{id:'crous',ico:'🏠',bg:'#f0fdf4',nm:'CROUS Besançon — Guide complet pour obtenir un logement',badge:{t:'Après visa — 7 juillet',c:'b-pur'},
-note:{t:'<strong>Bonne nouvelle :</strong> même sans DSE (dossier social étudiant clôturé le 31 mai), tu peux participer à la <strong>phase complémentaire</strong> ouverte à <strong>TOUS les étudiants y compris internationaux</strong> à partir du 7 juillet 2025. Pas besoin d\'être boursier.',c:'n-pur'},
-items:[
-{id:'cr1',t:'ÉTAPE 1 — Créer ton compte MesServices.etudiant.gouv.fr',d:'Plateforme nationale pour toutes les démarches étudiantes (DSE, logement, bourse).',h:'<strong>Dès maintenant :</strong> <a href="https://messervices.etudiant.gouv.fr">messervices.etudiant.gouv.fr</a> → Créer un compte avec email + données personnelles. Tu auras besoin de ce compte pour la phase complémentaire logement. Pas de date limite pour la création.',g:['req','Dès maintenant']},
-{id:'cr2',t:'ÉTAPE 2 — Se connecter sur trouverunlogement.lescrous.fr le 7 juillet',d:'Dès l\'ouverture de la phase complémentaire, accéder à l\'offre restante pour Besançon.',h:'<strong>Date clé : 7 juillet 2025</strong> à partir de la matinée. Se connecter sur <a href="https://trouverunlogement.lescrous.fr">trouverunlogement.lescrous.fr</a>. Filtrer par ville : <strong>Besançon</strong>. Consulter les logements disponibles du CROUS Bourgogne-Franche-Comté.',g:['req','7 juillet']},
-{id:'cr3',t:'ÉTAPE 3 — Faire jusqu\'à 10 vœux de logement',d:'Résidences universitaires CROUS à Besançon. Logements meublés à partir de 340€/mois charges comprises.',h:'<strong>Résidences CROUS Besançon :</strong>\n- Résidence Planoise (4 Place de l\'Europe, 25000 Besançon) → T1bis à partir de 340€/mois CC\n- Autres résidences visibles sur trouverunlogement.lescrous.fr\n<strong>Conseil :</strong> formule plusieurs vœux dès l\'ouverture le 7 juillet. Les places se remplissent vite, surtout en phase complémentaire.',g:['req','7 juillet']},
-{id:'cr4',t:'ÉTAPE 4 — Confirmer la proposition dans les 5 jours',d:'Si une proposition est faite, tu as 5 jours pour la confirmer. Passé ce délai, elle est annulée.',h:'Surveille ta boîte mail et SMS dès la phase complémentaire. Si proposition → connecte-toi immédiatement sur MesServices → espace Cité\'U → confirmer. Prépare les pièces justificatives demandées à l\'entrée (pièce d\'identité, attestation d\'inscription, RIB français).',g:['req']},
-{id:'cr5',t:'ÉTAPE 5 — Documents à préparer pour le dossier de location CROUS',d:'Documents à préparer à l\'avance pour soumettre rapidement quand une proposition est faite.',h:'<strong>Généralement demandés :</strong>\n- Passeport / pièce d\'identité\n- Attestation d\'inscription universitaire (Besançon)\n- RIB d\'un compte bancaire français (à ouvrir à l\'arrivée)\n- Justificatif de ressources OU attestation de garant\n- Attestation assurance habitation (obligatoire dès l\'entrée)\n<strong>Assurance habitation :</strong> Maif Étudiant, AXA, Luko — à souscrire dès l\'arrivée.',g:['req']},
-{id:'cr6',t:'ALTERNATIVE — Autres logements étudiants si CROUS complet',d:'En cas d\'absence de disponibilité CROUS, des alternatives existent à Besançon.',h:'<strong>Plateformes :</strong>\n- <a href="https://www.lokaviz.fr">lokaviz.fr</a> (CROUS) → annonces particuliers/colocation\n- Le Bon Coin → "location meublé Besançon" (250-500€/mois)\n- <a href="https://www.appartager.com">appartager.com</a> → colocation Besançon\n- Résidences privées étudiantes : Arpej, Nexity Studéa, Suitetudes Besançon\n- Facebook : groupes "Logement étudiant Besançon" ou "Université de Franche-Comté logement"',g:['inf']},
-]},
+      /* ─── 9. CROUS ─── */
+      {
+        id: 'crous', ico: '🏠', bg: '#f0fdf4', nm: 'CROUS Besançon — Guide complet pour obtenir un logement', badge: { t: 'Après visa — 7 juillet', c: 'b-pur' },
+        note: { t: '<strong>Bonne nouvelle :</strong> même sans DSE (dossier social étudiant clôturé le 31 mai), tu peux participer à la <strong>phase complémentaire</strong> ouverte à <strong>TOUS les étudiants y compris internationaux</strong> à partir du 7 juillet 2025. Pas besoin d\'être boursier.', c: 'n-pur' },
+        items: [
+          { id: 'cr1', t: 'ÉTAPE 1 — Créer ton compte MesServices.etudiant.gouv.fr', d: 'Plateforme nationale pour toutes les démarches étudiantes (DSE, logement, bourse).', h: '<strong>Dès maintenant :</strong> <a href="https://messervices.etudiant.gouv.fr">messervices.etudiant.gouv.fr</a> → Créer un compte avec email + données personnelles. Tu auras besoin de ce compte pour la phase complémentaire logement. Pas de date limite pour la création.', g: ['req', 'Dès maintenant'] },
+          { id: 'cr2', t: 'ÉTAPE 2 — Se connecter sur trouverunlogement.lescrous.fr le 7 juillet', d: 'Dès l\'ouverture de la phase complémentaire, accéder à l\'offre restante pour Besançon.', h: '<strong>Date clé : 7 juillet 2025</strong> à partir de la matinée. Se connecter sur <a href="https://trouverunlogement.lescrous.fr">trouverunlogement.lescrous.fr</a>. Filtrer par ville : <strong>Besançon</strong>. Consulter les logements disponibles du CROUS Bourgogne-Franche-Comté.', g: ['req', '7 juillet'] },
+          { id: 'cr3', t: 'ÉTAPE 3 — Faire jusqu\'à 10 vœux de logement', d: 'Résidences universitaires CROUS à Besançon. Logements meublés à partir de 340€/mois charges comprises.', h: '<strong>Résidences CROUS Besançon :</strong>\n- Résidence Planoise (4 Place de l\'Europe, 25000 Besançon) → T1bis à partir de 340€/mois CC\n- Autres résidences visibles sur trouverunlogement.lescrous.fr\n<strong>Conseil :</strong> formule plusieurs vœux dès l\'ouverture le 7 juillet. Les places se remplissent vite, surtout en phase complémentaire.', g: ['req', '7 juillet'] },
+          { id: 'cr4', t: 'ÉTAPE 4 — Confirmer la proposition dans les 5 jours', d: 'Si une proposition est faite, tu as 5 jours pour la confirmer. Passé ce délai, elle est annulée.', h: 'Surveille ta boîte mail et SMS dès la phase complémentaire. Si proposition → connecte-toi immédiatement sur MesServices → espace Cité\'U → confirmer. Prépare les pièces justificatives demandées à l\'entrée (pièce d\'identité, attestation d\'inscription, RIB français).', g: ['req'] },
+          { id: 'cr5', t: 'ÉTAPE 5 — Documents à préparer pour le dossier de location CROUS', d: 'Documents à préparer à l\'avance pour soumettre rapidement quand une proposition est faite.', h: '<strong>Généralement demandés :</strong>\n- Passeport / pièce d\'identité\n- Attestation d\'inscription universitaire (Besançon)\n- RIB d\'un compte bancaire français (à ouvrir à l\'arrivée)\n- Justificatif de ressources OU attestation de garant\n- Attestation assurance habitation (obligatoire dès l\'entrée)\n<strong>Assurance habitation :</strong> Maif Étudiant, AXA, Luko — à souscrire dès l\'arrivée.', g: ['req'] },
+          { id: 'cr6', t: 'ALTERNATIVE — Autres logements étudiants si CROUS complet', d: 'En cas d\'absence de disponibilité CROUS, des alternatives existent à Besançon.', h: '<strong>Plateformes :</strong>\n- <a href="https://www.lokaviz.fr">lokaviz.fr</a> (CROUS) → annonces particuliers/colocation\n- Le Bon Coin → "location meublé Besançon" (250-500€/mois)\n- <a href="https://www.appartager.com">appartager.com</a> → colocation Besançon\n- Résidences privées étudiantes : Arpej, Nexity Studéa, Suitetudes Besançon\n- Facebook : groupes "Logement étudiant Besançon" ou "Université de Franche-Comté logement"', g: ['inf'] },
+        ]
+      },
 
-/* ─── 10. LETTRE EXPLICATIVE ─── */
-{id:'lettre',ico:'✍️',bg:'#fafafa',nm:'Lettre explicative — Motivation, Projet & Situation',badge:{t:'À rédiger MAINTENANT',c:'b-amb'},
-note:{t:'<strong>Lettre CRITIQUE dans ton cas.</strong> Elle explique et compense : emploi récent (2 mois), peu de relevés bancaires, CROUS non confirmé. En français, professionnelle, sobre. 1 à 2 pages max. Signée + datée. Elle doit convaincre le consulat que tu es sérieux et que tu rentreras en Algérie (ou auras un avenir clair) après le M2.',c:'n-blu'},
-items:[
-{id:'le1',t:'§1 — Introduction et identité',d:'Présentation brève : qui tu es, quelle est ta demande.',h:'Ex : "Je soussigné [nom], ressortissant algérien né le [...] à [...], ai l\'honneur de solliciter un visa long séjour étudiant en vue d\'intégrer le M2 Systèmes Logiciels à l\'Université Marie et Louis Pasteur de Besançon pour l\'année universitaire 2025-2026."',g:['req']},
-{id:'le2',t:'§2 — Parcours académique',d:'Tes diplômes, résultats, établissements.',h:'Détailler chronologiquement : baccalauréat [année, établissement, mention] → licence/master 1 [filière, établissement, mention]. Insister sur la cohérence avec le M2 Systèmes Logiciels.',g:['req']},
-{id:'le3',t:'§3 — Expérience professionnelle (2 mois)',d:'Pourquoi tu travailles et pourquoi tu reprends les études.',h:'Mentionner le poste, le secteur, la date de début. Expliquer : "Cette expérience professionnelle m\'a confirmé l\'importance d\'approfondir mes compétences en [domaine] via le M2 Systèmes Logiciels, complémentaire à mon expérience de terrain."',g:['req']},
-{id:'le4',t:'§4 — Pourquoi ce M2 et pourquoi Besançon',d:'Justification du choix précis du programme et de l\'université.',h:'Mentionner des éléments concrets : spécialisation du programme, laboratoires de recherche, parcours proposé (cours identifiés), réputation de l\'UFR Sciences & Techniques. Éviter les formules génériques.',g:['req']},
-{id:'le5',t:'§5 — Projet professionnel après le M2',d:'Rassurer le consulat sur tes intentions.',h:'Ex : "À l\'issue du M2, j\'envisage de mettre à profit mes compétences dans le secteur [tech/informatique] en Algérie, où la transformation numérique crée une forte demande de profils qualifiés en systèmes logiciels." Montre que tu as un plan concret.',g:['req']},
-{id:'le6',t:'§6 — Situation financière & garants',d:'Exposer clairement les ressources disponibles.',h:'"Ma prise en charge financière sera assurée par : (1) ma belle-sœur [prénom nom], résidente à Paris, dont les ressources mensuelles de [montant] sont attestées par les documents joints ; (2) mon parent [père/mère] retraité en Algérie percevant une pension de 60 000 DA/mois ; (3) mes propres ressources issues de mon emploi actuel."',g:['req']},
-{id:'le7',t:'§7 — Hébergement & logistique',d:'Plan d\'hébergement pour l\'arrivée et la suite.',h:'"J\'ai réservé un hébergement hôtelier à Besançon pour mes premières semaines. Je ferai une demande de logement au CROUS Bourgogne-Franche-Comté dès l\'ouverture de la phase complémentaire (7 juillet 2025). Je prospecte également auprès des résidences étudiantes privées et services de logement de l\'université."',g:['req']},
-{id:'le8',t:'§8 — Conclusion et signature',d:'Formule de politesse + signature manuscrite + date.',h:'"Je vous prie d\'agréer, Monsieur/Madame le Consul, l\'expression de mes respectueuses salutations. Fait à [ville], le [date]. [Signature manuscrite] [Prénom NOM]"',g:['req']},
-]},
+      /* ─── 10. LETTRE EXPLICATIVE ─── */
+      {
+        id: 'lettre', ico: '✍️', bg: '#fafafa', nm: 'Lettre explicative — Motivation, Projet & Situation', badge: { t: 'À rédiger MAINTENANT', c: 'b-amb' },
+        note: { t: '<strong>Lettre CRITIQUE dans ton cas.</strong> Elle explique et compense : emploi récent (2 mois), peu de relevés bancaires, CROUS non confirmé. En français, professionnelle, sobre. 1 à 2 pages max. Signée + datée. Elle doit convaincre le consulat que tu es sérieux et que tu rentreras en Algérie (ou auras un avenir clair) après le M2.', c: 'n-blu' },
+        items: [
+          { id: 'le1', t: '§1 — Introduction et identité', d: 'Présentation brève : qui tu es, quelle est ta demande.', h: 'Ex : "Je soussigné [nom], ressortissant algérien né le [...] à [...], ai l\'honneur de solliciter un visa long séjour étudiant en vue d\'intégrer le M2 Systèmes Logiciels à l\'Université Marie et Louis Pasteur de Besançon pour l\'année universitaire 2025-2026."', g: ['req'] },
+          { id: 'le2', t: '§2 — Parcours académique', d: 'Tes diplômes, résultats, établissements.', h: 'Détailler chronologiquement : baccalauréat [année, établissement, mention] → licence/master 1 [filière, établissement, mention]. Insister sur la cohérence avec le M2 Systèmes Logiciels.', g: ['req'] },
+          { id: 'le3', t: '§3 — Expérience professionnelle (2 mois)', d: 'Pourquoi tu travailles et pourquoi tu reprends les études.', h: 'Mentionner le poste, le secteur, la date de début. Expliquer : "Cette expérience professionnelle m\'a confirmé l\'importance d\'approfondir mes compétences en [domaine] via le M2 Systèmes Logiciels, complémentaire à mon expérience de terrain."', g: ['req'] },
+          { id: 'le4', t: '§4 — Pourquoi ce M2 et pourquoi Besançon', d: 'Justification du choix précis du programme et de l\'université.', h: 'Mentionner des éléments concrets : spécialisation du programme, laboratoires de recherche, parcours proposé (cours identifiés), réputation de l\'UFR Sciences & Techniques. Éviter les formules génériques.', g: ['req'] },
+          { id: 'le5', t: '§5 — Projet professionnel après le M2', d: 'Rassurer le consulat sur tes intentions.', h: 'Ex : "À l\'issue du M2, j\'envisage de mettre à profit mes compétences dans le secteur [tech/informatique] en Algérie, où la transformation numérique crée une forte demande de profils qualifiés en systèmes logiciels." Montre que tu as un plan concret.', g: ['req'] },
+          { id: 'le6', t: '§6 — Situation financière & garants', d: 'Exposer clairement les ressources disponibles.', h: '"Ma prise en charge financière sera assurée par : (1) ma belle-sœur [prénom nom], résidente à Paris, dont les ressources mensuelles de [montant] sont attestées par les documents joints ; (2) mon parent [père/mère] retraité en Algérie percevant une pension de 60 000 DA/mois ; (3) mes propres ressources issues de mon emploi actuel."', g: ['req'] },
+          { id: 'le7', t: '§7 — Hébergement & logistique', d: 'Plan d\'hébergement pour l\'arrivée et la suite.', h: '"J\'ai réservé un hébergement hôtelier à Besançon pour mes premières semaines. Je ferai une demande de logement au CROUS Bourgogne-Franche-Comté dès l\'ouverture de la phase complémentaire (7 juillet 2025). Je prospecte également auprès des résidences étudiantes privées et services de logement de l\'université."', g: ['req'] },
+          { id: 'le8', t: '§8 — Conclusion et signature', d: 'Formule de politesse + signature manuscrite + date.', h: '"Je vous prie d\'agréer, Monsieur/Madame le Consul, l\'expression de mes respectueuses salutations. Fait à [ville], le [date]. [Signature manuscrite] [Prénom NOM]"', g: ['req'] },
+        ]
+      },
 
-/* ─── 11. APRÈS VISA - ARRIVÉE ─── */
-{id:'apres',ico:'✈️',bg:'#eff6ff',nm:'Après le visa — Démarches obligatoires en France',badge:{t:'Avant / après arrivée',c:'b-blu'},
-note:{t:'<strong>Le visa n\'est pas la fin — il y a des démarches OBLIGATOIRES à faire en France.</strong> Si tu les rates, tu perds des droits (couverture santé, titre de séjour). Prépare-toi à l\'avance.',c:'n-blu'},
-items:[
-{id:'ap1',t:'CVEC — Contribution Vie Étudiante et de Campus',d:'Contribution obligatoire à payer AVANT de finaliser l\'inscription universitaire à Besançon. Montant 2025 : environ 103€.',h:'<strong>Dès l\'arrivée ou avant :</strong> <a href="https://cvec.etudiant.gouv.fr">cvec.etudiant.gouv.fr</a> → s\'inscrire avec ton INE (numéro étudiant) → payer en ligne (carte bancaire). Obtenir l\'<strong>attestation CVEC</strong> → indispensable pour finaliser l\'inscription. Possibilité d\'exonération si boursier.',g:['req','Avant inscription']},
-{id:'ap2',t:'Validation du VLS-TS en ligne (dans les 3 mois)',d:'Ton visa long séjour VLS-TS doit être "validé" en ligne après ton arrivée. Délai max : 3 mois. Si tu ne le fais pas, tu es en situation irrégulière.',h:'<strong>Dès l\'arrivée (dans les 3 mois max) :</strong> <a href="https://administration-etrangers-en-france.interieur.gouv.fr">administration-etrangers-en-france.interieur.gouv.fr</a> → "Valider mon visa". Besoin : email, infos du visa, adresse en France, carte bancaire pour taxe de 50€ environ.',g:['req','Dans 3 mois arrivée']},
-{id:'ap3',t:'Inscription à la Sécurité Sociale étudiante (CPAM)',d:'Gratuite et obligatoire pour tous les étudiants non-européens de moins de 28 ans. Remplace l\'assurance privée souscrite pour le visa.',h:'<strong>Lors de l\'inscription universitaire à Besançon :</strong> l\'université guidera vers la procédure d\'affiliation CPAM. Ou directement sur <a href="https://www.ameli.fr">ameli.fr</a> → étudiant étranger. Documents : passeport + visa + attestation d\'inscription + RIB.',g:['req','À l\'arrivée']},
-{id:'ap4',t:'Carte de séjour — demande à la Préfecture du Doubs',d:'En tant qu\'Algérien, tu dois déposer une demande de carte de séjour (titre spécial Accord 1968) à la préfecture dans les premiers mois.',h:'<strong>Préfecture du Doubs à Besançon :</strong> Prendre RDV en ligne sur le site de la préfecture. Documents : passeport + visa + justificatif domicile Besançon + attestation inscription + photos identité. La préfecture remet un récépissé puis la carte de séjour.',g:['req','Premiers mois']},
-{id:'ap5',t:'Compte bancaire en France (pour RIB, loyer, virement)',d:'Nécessaire pour : payer le loyer CROUS, recevoir les aides CAF, être payé si tu travailles.',h:'<strong>Banques étudiantes accessibles :</strong>\n- La Banque Postale (bureau de poste) : accessible avec passeport + visa\n- Boursorama / Revolut / Lydia : ouverture en ligne, facile pour étrangers\n- BNP Paribas / Société Générale : présenter en agence avec visa étudiant\n<strong>Documents généralement demandés :</strong> passeport, visa étudiant, attestation d\'inscription, justificatif de domicile en France.',g:['req','À l\'arrivée']},
-{id:'ap6',t:'CAF — Aide Personnalisée au Logement (APL)',d:'Aide financière au logement versée par la CAF. Accessible aux étudiants étrangers avec visa valide. Montant selon situation : 100-300€/mois.',h:'<strong>Après avoir signé ton bail (CROUS ou privé) :</strong> <a href="https://www.caf.fr">caf.fr</a> → Créer un compte → Demander l\'APL. Documents : RIB, bail signé, passeport, visa, attestation d\'inscription. Délai : 1-2 mois pour le premier versement.',g:['req','Après logement']},
-]},
+      /* ─── 11. APRÈS VISA - ARRIVÉE ─── */
+      {
+        id: 'apres', ico: '✈️', bg: '#eff6ff', nm: 'Après le visa — Démarches obligatoires en France', badge: { t: 'Avant / après arrivée', c: 'b-blu' },
+        note: { t: '<strong>Le visa n\'est pas la fin — il y a des démarches OBLIGATOIRES à faire en France.</strong> Si tu les rates, tu perds des droits (couverture santé, titre de séjour). Prépare-toi à l\'avance.', c: 'n-blu' },
+        items: [
+          { id: 'ap1', t: 'CVEC — Contribution Vie Étudiante et de Campus', d: 'Contribution obligatoire à payer AVANT de finaliser l\'inscription universitaire à Besançon. Montant 2025 : environ 103€.', h: '<strong>Dès l\'arrivée ou avant :</strong> <a href="https://cvec.etudiant.gouv.fr">cvec.etudiant.gouv.fr</a> → s\'inscrire avec ton INE (numéro étudiant) → payer en ligne (carte bancaire). Obtenir l\'<strong>attestation CVEC</strong> → indispensable pour finaliser l\'inscription. Possibilité d\'exonération si boursier.', g: ['req', 'Avant inscription'] },
+          { id: 'ap2', t: 'Validation du VLS-TS en ligne (dans les 3 mois)', d: 'Ton visa long séjour VLS-TS doit être "validé" en ligne après ton arrivée. Délai max : 3 mois. Si tu ne le fais pas, tu es en situation irrégulière.', h: '<strong>Dès l\'arrivée (dans les 3 mois max) :</strong> <a href="https://administration-etrangers-en-france.interieur.gouv.fr">administration-etrangers-en-france.interieur.gouv.fr</a> → "Valider mon visa". Besoin : email, infos du visa, adresse en France, carte bancaire pour taxe de 50€ environ.', g: ['req', 'Dans 3 mois arrivée'] },
+          { id: 'ap3', t: 'Inscription à la Sécurité Sociale étudiante (CPAM)', d: 'Gratuite et obligatoire pour tous les étudiants non-européens de moins de 28 ans. Remplace l\'assurance privée souscrite pour le visa.', h: '<strong>Lors de l\'inscription universitaire à Besançon :</strong> l\'université guidera vers la procédure d\'affiliation CPAM. Ou directement sur <a href="https://www.ameli.fr">ameli.fr</a> → étudiant étranger. Documents : passeport + visa + attestation d\'inscription + RIB.', g: ['req', 'À l\'arrivée'] },
+          { id: 'ap4', t: 'Carte de séjour — demande à la Préfecture du Doubs', d: 'En tant qu\'Algérien, tu dois déposer une demande de carte de séjour (titre spécial Accord 1968) à la préfecture dans les premiers mois.', h: '<strong>Préfecture du Doubs à Besançon :</strong> Prendre RDV en ligne sur le site de la préfecture. Documents : passeport + visa + justificatif domicile Besançon + attestation inscription + photos identité. La préfecture remet un récépissé puis la carte de séjour.', g: ['req', 'Premiers mois'] },
+          { id: 'ap5', t: 'Compte bancaire en France (pour RIB, loyer, virement)', d: 'Nécessaire pour : payer le loyer CROUS, recevoir les aides CAF, être payé si tu travailles.', h: '<strong>Banques étudiantes accessibles :</strong>\n- La Banque Postale (bureau de poste) : accessible avec passeport + visa\n- Boursorama / Revolut / Lydia : ouverture en ligne, facile pour étrangers\n- BNP Paribas / Société Générale : présenter en agence avec visa étudiant\n<strong>Documents généralement demandés :</strong> passeport, visa étudiant, attestation d\'inscription, justificatif de domicile en France.', g: ['req', 'À l\'arrivée'] },
+          { id: 'ap6', t: 'CAF — Aide Personnalisée au Logement (APL)', d: 'Aide financière au logement versée par la CAF. Accessible aux étudiants étrangers avec visa valide. Montant selon situation : 100-300€/mois.', h: '<strong>Après avoir signé ton bail (CROUS ou privé) :</strong> <a href="https://www.caf.fr">caf.fr</a> → Créer un compte → Demander l\'APL. Documents : RIB, bail signé, passeport, visa, attestation d\'inscription. Délai : 1-2 mois pour le premier versement.', g: ['req', 'Après logement'] },
+        ]
+      },
 
-/* ─── 12. CAPAGO RDV ─── */
-{id:'rdv',ico:'📋',bg:'#fff1f2',nm:'RDV CAPAGO 8 juin — Checklist jour J',badge:{t:'8 juin 2025',c:'b-red'},
-note:{t:'<strong>Tu résides dans la circonscription consulaire d\'Annaba / Constantine</strong> → ton centre CAPAGO compétent est Annaba ou Constantine (selon ta wilaya). Vérifier sur <a href="https://fr-dz.capago.eu/rendezvous">fr-dz.capago.eu</a> quelle circonscription couvre ta wilaya. Les frais sont : 50€ équivalent DZD (frais de dossier consulat) + 29€ équivalent DZD (frais CAPAGO). À payer en espèces en DZD au taux de chancellerie du jour.',c:'n-red'},
-items:[
-{id:'rd1',t:'Confirmer et imprimer la convocation CAPAGO',d:'La confirmation de RDV reçue par email. À présenter à l\'entrée.',h:'Imprimer l\'email de confirmation. Si perdu : se connecter sur le portail CAPAGO avec ta référence de dossier → télécharger la convocation.',g:['req']},
-{id:'rd2',t:'Vérifier ta wilaya = circonscription consulaire Constantine/Annaba',d:'Si tu résides dans la wilaya de M\'Sila → circonscription Annaba → Centre CAPAGO Constantine ou Annaba.',h:'Vérifier sur <a href="https://fr-dz.capago.eu/rendezvous">fr-dz.capago.eu</a> la liste des wilayat par circonscription. M\'Sila est généralement sous Annaba. Ton RDV est déjà fixé au 8 juin — vérifie simplement que c\'est le bon centre.',g:['req']},
-{id:'rd3',t:'Préparer ORIGINAUX + copies pour chaque document',d:'Le consul garde les copies et te rend les originaux. Il faut donc 2 exemplaires de tout.',h:'Organiser le dossier dans des chemises plastiques classées dans l\'ordre : 1-Campus France, 2-Passeport+photos, 3-Diplômes, 4-Relevés notes, 5-Casier judiciaire, 6-Finances, 7-Garant France, 8-Garant DZ (si applicable), 9-Hébergement, 10-Lettre.',g:['req']},
-{id:'rd4',t:'Prévoir les frais en espèces DZD',d:'Frais de dossier : environ 50€ équivalent DZD + frais CAPAGO 29€ équivalent DZD. Total ≈ 11 000-13 000 DZD selon taux.',h:'Vérifier le taux de chancellerie en vigueur le jour J sur le site du consulat ou CAPAGO. Prévoir un peu plus que prévu. Paiement en DZD espèces uniquement.',g:['req']},
-{id:'rd5',t:'Données biométriques (empreintes + photo)',d:'Prise d\'empreintes digitales et photo en direct au centre CAPAGO. Obligatoire. Ne pas mettre de crème sur les mains le matin.',h:'Pas de préparation particulière. Présenter les mains propres et sèches. La photo sera prise sur place — tenue correcte, visage dégagé.',g:['req']},
-]},
-];
+      /* ─── 12. CAPAGO RDV ─── */
+      {
+        id: 'rdv', ico: '📋', bg: '#fff1f2', nm: 'RDV CAPAGO 8 juin — Checklist jour J', badge: { t: '8 juin 2025', c: 'b-red' },
+        note: { t: '<strong>Tu résides dans la circonscription consulaire d\'Annaba / Constantine</strong> → ton centre CAPAGO compétent est Annaba ou Constantine (selon ta wilaya). Vérifier sur <a href="https://fr-dz.capago.eu/rendezvous">fr-dz.capago.eu</a> quelle circonscription couvre ta wilaya. Les frais sont : 50€ équivalent DZD (frais de dossier consulat) + 29€ équivalent DZD (frais CAPAGO). À payer en espèces en DZD au taux de chancellerie du jour.', c: 'n-red' },
+        items: [
+          { id: 'rd1', t: 'Confirmer et imprimer la convocation CAPAGO', d: 'La confirmation de RDV reçue par email. À présenter à l\'entrée.', h: 'Imprimer l\'email de confirmation. Si perdu : se connecter sur le portail CAPAGO avec ta référence de dossier → télécharger la convocation.', g: ['req'] },
+          { id: 'rd2', t: 'Vérifier ta wilaya = circonscription consulaire Constantine/Annaba', d: 'Si tu résides dans la wilaya de M\'Sila → circonscription Annaba → Centre CAPAGO Constantine ou Annaba.', h: 'Vérifier sur <a href="https://fr-dz.capago.eu/rendezvous">fr-dz.capago.eu</a> la liste des wilayat par circonscription. M\'Sila est généralement sous Annaba. Ton RDV est déjà fixé au 8 juin — vérifie simplement que c\'est le bon centre.', g: ['req'] },
+          { id: 'rd3', t: 'Préparer ORIGINAUX + copies pour chaque document', d: 'Le consul garde les copies et te rend les originaux. Il faut donc 2 exemplaires de tout.', h: 'Organiser le dossier dans des chemises plastiques classées dans l\'ordre : 1-Campus France, 2-Passeport+photos, 3-Diplômes, 4-Relevés notes, 5-Casier judiciaire, 6-Finances, 7-Garant France, 8-Garant DZ (si applicable), 9-Hébergement, 10-Lettre.', g: ['req'] },
+          { id: 'rd4', t: 'Prévoir les frais en espèces DZD', d: 'Frais de dossier : environ 50€ équivalent DZD + frais CAPAGO 29€ équivalent DZD. Total ≈ 11 000-13 000 DZD selon taux.', h: 'Vérifier le taux de chancellerie en vigueur le jour J sur le site du consulat ou CAPAGO. Prévoir un peu plus que prévu. Paiement en DZD espèces uniquement.', g: ['req'] },
+          { id: 'rd5', t: 'Données biométriques (empreintes + photo)', d: 'Prise d\'empreintes digitales et photo en direct au centre CAPAGO. Obligatoire. Ne pas mettre de crème sur les mains le matin.', h: 'Pas de préparation particulière. Présenter les mains propres et sèches. La photo sera prise sur place — tenue correcte, visage dégagé.', g: ['req'] },
+        ]
+      },
+    ];
 
-var state={};
-SECS.forEach(function(s){s.items.forEach(function(i){state[i.id]=false;});});
+    var state = {};
+    SECS.forEach(function (s) { s.items.forEach(function (i) { state[i.id] = false; }); });
 
-function total(){return Object.keys(state).length;}
-function ckd(){return Object.values(state).filter(Boolean).length;}
-function updP(){
-var t=total(),c=ckd(),pct=t?Math.round(c/t*100):0;
-document.getElementById('pbar').style.width=pct+'%';
-document.getElementById('plbl').textContent=c+' / '+t+' éléments cochés ('+pct+'%)';
-SECS.forEach(function(s){
-var d=s.items.filter(function(i){return state[i.id];}).length;
-var el=document.getElementById('sc-'+s.id);
-if(el)el.textContent=d+'/'+s.items.length+' cochés';
-});
-}
-function tog(id){
-state[id]=!state[id];
-var el=document.querySelector('[data-iid="'+id+'"]');
-if(el)el.classList.toggle('chk',state[id]);
-updP();
-}
-function togSec(id){
-document.getElementById('sb-'+id).classList.toggle('open');
-document.getElementById('ch-'+id).classList.toggle('open');
-}
-function expandAll(){
-SECS.forEach(function(s){
-document.getElementById('sb-'+s.id).classList.add('open');
-document.getElementById('ch-'+s.id).classList.add('open');
-});
-}
-function resetAll(){
-if(!confirm('Réinitialiser toutes les cases ?'))return;
-Object.keys(state).forEach(function(k){state[k]=false;});
-document.querySelectorAll('.item').forEach(function(el){el.classList.remove('chk');});
-updP();
-}
-function tgHtml(tags){
-return tags.map(function(t){
-if(t==='req')return '<span class="tag t-req">Obligatoire</span>';
-if(t==='opt')return '<span class="tag t-opt">Recommandé</span>';
-if(t==='don')return '<span class="tag t-don">Déjà fait ✓</span>';
-if(t==='inf')return '<span class="tag t-inf">Info utile</span>';
-return '<span class="tag t-urg">'+t+'</span>';
-}).join('');
-}
-function chainHtml(){
-return '<div class="chain"><div class="chain-t">Chaîne d\'authentification — diplômes algériens vers France</div>'
-+'<div class="chain-steps">'
-+'<div class="cstep cs1"><div class="csdot">1</div><div class="cslbl">Campus France authentifie</div></div>'
-+'<span class="cs-arr">→</span>'
-+'<div class="cstep cs2"><div class="csdot">2</div><div class="cslbl">RDV vérif. mercredi</div></div>'
-+'<span class="cs-arr">→</span>'
-+'<div class="cstep cs3"><div class="csdot">3</div><div class="cslbl">Message fin de procédure</div></div>'
-+'<span class="cs-arr">→</span>'
-+'<div class="cstep cs4"><div class="csdot">4</div><div class="cslbl">MAE Constantine — non requis visa France</div></div>'
-+'</div></div>';
-}
-function render(){
-document.getElementById('app').innerHTML=SECS.map(function(s){
-var noteHtml=s.note?'<div class="note '+s.note.c+'">'+s.note.t+'</div>':'';
-var chainSec=s.chain?chainHtml():'';
-var itemsHtml=s.items.map(function(i){
-var howHtml=i.h?'<div class="ihow"><div class="ihow-title">📌 Comment obtenir / faire</div><div class="ihow-txt">'+i.h.replace(/\n/g,'<br>')+'</div></div>':'';
-return '<div class="item'+(state[i.id]?' chk':'')+'" data-iid="'+i.id+'" onclick="tog(\''+i.id+'\')">'
-+'<div class="cbx"><svg class="ck-ico" viewBox="0 0 11 9" fill="none"><path d="M1 4L4.5 7.5L10 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-+'<div class="ibody"><div class="ititle">'+i.t+'</div><div class="idet">'+i.d+'</div>'+howHtml+'<div class="tags">'+tgHtml(i.g)+'</div></div>'
-+'</div>';
-}).join('');
-return '<div class="sec">'
-+'<div class="sec-hdr" onclick="togSec(\''+s.id+'\')">'
-+'<div class="sec-ico" style="background:'+s.bg+'">'+s.ico+'</div>'
-+'<div class="sec-inf"><div class="sec-name">'+s.nm+'</div><div class="sec-cnt" id="sc-'+s.id+'">0/'+s.items.length+' cochés</div></div>'
-+'<span class="badge '+s.badge.c+'">'+s.badge.t+'</span>'
-+'<span class="chev" id="ch-'+s.id+'">▼</span>'
-+'</div>'
-+'<div class="sec-body" id="sb-'+s.id+'">'+noteHtml+chainSec+itemsHtml+'</div>'
-+'</div>';
-}).join('');
-updP();
-}
-render();
-</script>
+    // Load state from localStorage
+    function loadState() {
+      var saved = localStorage.getItem('visaChecklistState');
+      if (saved) {
+        try {
+          var parsed = JSON.parse(saved);
+          Object.assign(state, parsed);
+        } catch (e) {
+          console.error('Error loading state:', e);
+        }
+      }
+    }
+
+    // Save state to localStorage
+    function saveState() {
+      localStorage.setItem('visaChecklistState', JSON.stringify(state));
+    }
+
+    // Export state as JSON file
+    function exportState() {
+      var dataStr = JSON.stringify(state, null, 2);
+      var dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+      var exportFileDefaultName = 'visa-checklist-state.json';
+      var linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    }
+
+    // Import state from JSON file
+    function importState(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          var importedState = JSON.parse(e.target.result);
+          Object.assign(state, importedState);
+          render();
+          saveState();
+        } catch (e) {
+          alert('Erreur lors de l\'importation du fichier JSON.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function total() { return Object.keys(state).length; }
+    function ckd() { return Object.values(state).filter(Boolean).length; }
+    function updP() {
+      var t = total(), c = ckd(), pct = t ? Math.round(c / t * 100) : 0;
+      document.getElementById('pbar').style.width = pct + '%';
+      document.getElementById('plbl').textContent = c + ' / ' + t + ' éléments cochés (' + pct + '%)';
+      SECS.forEach(function (s) {
+        var d = s.items.filter(function (i) { return state[i.id]; }).length;
+        var el = document.getElementById('sc-' + s.id);
+        if (el) el.textContent = d + '/' + s.items.length + ' cochés';
+      });
+    }
+    function tog(id) {
+      state[id] = !state[id];
+      var el = document.querySelector('[data-iid="' + id + '"]');
+      if (el) el.classList.toggle('chk', state[id]);
+      updP();
+      saveState();
+    }
+    function togSec(id) {
+      document.getElementById('sb-' + id).classList.toggle('open');
+      document.getElementById('ch-' + id).classList.toggle('open');
+    }
+    function expandAll() {
+      SECS.forEach(function (s) {
+        document.getElementById('sb-' + s.id).classList.add('open');
+        document.getElementById('ch-' + s.id).classList.add('open');
+      });
+    }
+    function resetAll() {
+      if (!confirm('Réinitialiser toutes les cases ?')) return;
+      Object.keys(state).forEach(function (k) { state[k] = false; });
+      document.querySelectorAll('.item').forEach(function (el) { el.classList.remove('chk'); });
+      updP();
+      saveState();
+    }
+    function tgHtml(tags) {
+      return tags.map(function (t) {
+        if (t === 'req') return '<span class="tag t-req">Obligatoire</span>';
+        if (t === 'opt') return '<span class="tag t-opt">Recommandé</span>';
+        if (t === 'don') return '<span class="tag t-don">Déjà fait ✓</span>';
+        if (t === 'inf') return '<span class="tag t-inf">Info utile</span>';
+        return '<span class="tag t-urg">' + t + '</span>';
+      }).join('');
+    }
+    function chainHtml() {
+      return '<div class="chain"><div class="chain-t">Chaîne d\'authentification — diplômes algériens vers France</div>'
+        + '<div class="chain-steps">'
+        + '<div class="cstep cs1"><div class="csdot">1</div><div class="cslbl">Campus France authentifie</div></div>'
+        + '<span class="cs-arr">→</span>'
+        + '<div class="cstep cs2"><div class="csdot">2</div><div class="cslbl">RDV vérif. mercredi</div></div>'
+        + '<span class="cs-arr">→</span>'
+        + '<div class="cstep cs3"><div class="csdot">3</div><div class="cslbl">Message fin de procédure</div></div>'
+        + '<span class="cs-arr">→</span>'
+        + '<div class="cstep cs4"><div class="csdot">4</div><div class="cslbl">MAE Constantine — non requis visa France</div></div>'
+        + '</div></div>';
+    }
+    function render() {
+      document.getElementById('app').innerHTML = SECS.map(function (s) {
+        var noteHtml = s.note ? '<div class="note ' + s.note.c + '">' + s.note.t + '</div>' : '';
+        var chainSec = s.chain ? chainHtml() : '';
+        var itemsHtml = s.items.map(function (i) {
+          var howHtml = i.h ? '<div class="ihow"><div class="ihow-title">📌 Comment obtenir / faire</div><div class="ihow-txt">' + i.h.replace(/\n/g, '<br>') + '</div></div>' : '';
+          return '<div class="item' + (state[i.id] ? ' chk' : '') + '" data-iid="' + i.id + '" onclick="tog(\'' + i.id + '\')">'
+            + '<div class="cbx"><svg class="ck-ico" viewBox="0 0 11 9" fill="none"><path d="M1 4L4.5 7.5L10 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+            + '<div class="ibody"><div class="ititle">' + i.t + '</div><div class="idet">' + i.d + '</div>' + howHtml + '<div class="tags">' + tgHtml(i.g) + '</div></div>'
+            + '</div>';
+        }).join('');
+        return '<div class="sec">'
+          + '<div class="sec-hdr" onclick="togSec(\'' + s.id + '\')">'
+          + '<div class="sec-ico" style="background:' + s.bg + '">' + s.ico + '</div>'
+          + '<div class="sec-inf"><div class="sec-name">' + s.nm + '</div><div class="sec-cnt" id="sc-' + s.id + '">0/' + s.items.length + ' cochés</div></div>'
+          + '<span class="badge ' + s.badge.c + '">' + s.badge.t + '</span>'
+          + '<span class="chev" id="ch-' + s.id + '">▼</span>'
+          + '</div>'
+          + '<div class="sec-body" id="sb-' + s.id + '">' + noteHtml + chainSec + itemsHtml + '</div>'
+          + '</div>';
+      }).join('');
+      updP();
+    }
+    loadState();
+    render();
+  </script>
 </body>
+
 </html>
