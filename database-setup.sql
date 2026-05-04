@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS user_letters (
   title TEXT NOT NULL,
   content TEXT NOT NULL,
   file_url TEXT, -- For uploaded files
+  file_name TEXT, -- Original file name
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, letter_id)
 );
