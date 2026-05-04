@@ -1,6 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
-import './index.css';
-import { supabaseClient } from './supabaseClient';
+﻿import Login from './Login';
 
 const SECS = [
   {
@@ -117,11 +115,18 @@ const Chain = () => (
 function App() {
   const [state, setState] = useState(createInitialState());
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('Non connecté');
   const [openSections, setOpenSections] = useState([]);
   const [saveStatus, setSaveStatus] = useState('');
   const [saveLoading, setSaveLoading] = useState(false);
   const [selectedSection, setSelectedSection] = useState(SECS[0].id);
+  const [showAddItem, setShowAddItem] = useState(false);
+  const [showAddSection, setShowAddSection] = useState(false);
+  const [showAddComment, setShowAddComment] = useState(false);
+  const [newItem, setNewItem] = useState({ title: '', description: '', how: '', tags: [], priority: 'b-blu' });
+  const [newSection, setNewSection] = useState({ name: '', icon: '', color: '#eff6ff', badge: { t: 'Nouveau', c: 'b-blu' } });
+  const [newComment, setNewComment] = useState({ text: '', priority: 'b-blu' });
 
   const total = useMemo(() => Object.keys(state).length, [state]);
   const checked = useMemo(() => Object.values(state).filter(Boolean).length, [state]);
@@ -138,14 +143,31 @@ function App() {
     }
 
     const init = async () => {
-      const { data } = await supabaseClient.auth.getSession();
-      const currentUser = data.session ? data.session.user : null;
-      if (currentUser) {
-        setUser(currentUser);
-        setStatus(`Connecté : ${currentUser.email}`);
-        await loadRemoteState(currentUser);
-      } else {
-        setStatus('Non connecté');
+      try {
+        console.log('Checking authentication...');
+        if (!supabaseClient) {
+          console.error('Supabase client not available');
+          setLoading(false);
+          return;
+        }
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) {
+          console.error('Auth error:', error);
+        }
+        const currentUser = data.session ? data.session.user : null;
+        console.log('Current user:', currentUser);
+        if (currentUser) {
+          setUser(currentUser);
+          setStatus(`Connecté : ${currentUser.email}`);
+          await loadRemoteState(currentUser);
+        } else {
+          setStatus('Non connecté');
+        }
+      } catch (error) {
+        console.error('Init error:', error);
+      } finally {
+        console.log('Setting loading to false');
+        setLoading(false);
       }
     };
 
@@ -227,26 +249,81 @@ function App() {
     saveRemoteState(next);
   };
 
-  const handleLogin = async () => {
-    setStatus('Connexion GitHub...');
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: window.location.origin
-      }
-    });
-    if (error) {
-      console.error('GitHub sign in error:', error);
-      setStatus('Erreur de connexion GitHub');
-    }
-  };
-
   const handleLogout = async () => {
     await supabaseClient.auth.signOut();
     setUser(null);
     setStatus('Déconnecté');
   };
+  const handleAddItem = () => {
+    if (!newItem.title.trim()) return;
+    
+    const itemId = `custom_${Date.now()}`;
+    const item = {
+      id: itemId,
+      t: newItem.title,
+      d: newItem.description,
+      h: newItem.how,
+      g: newItem.tags,
+      priority: newItem.priority
+    };
 
+    // Add to current section
+    const updatedSections = SECS.map(section => {
+      if (section.id === selectedSection) {
+        return { ...section, items: [...section.items, item] };
+      }
+      return section;
+    });
+
+    // Update SECS (in a real app, this would be saved to database)
+    // For now, we'll just update the state
+    setState(prev => ({ ...prev, [itemId]: false }));
+    
+    setNewItem({ title: '', description: '', how: '', tags: [], priority: 'b-blu' });
+    setShowAddItem(false);
+  };
+
+  const handleAddSection = () => {
+    if (!newSection.name.trim()) return;
+    
+    const sectionId = `custom_${Date.now()}`;
+    const section = {
+      id: sectionId,
+      ico: newSection.icon || '📝',
+      bg: newSection.color,
+      nm: newSection.name,
+      badge: newSection.badge,
+      items: []
+    };
+
+    // Add to SECS (in a real app, this would be saved to database)
+    SECS.push(section);
+    
+    setNewSection({ name: '', icon: '', color: '#eff6ff', badge: { t: 'Nouveau', c: 'b-blu' } });
+    setShowAddSection(false);
+  };
+
+  const handleAddComment = () => {
+    if (!newComment.text.trim()) return;
+    
+    const commentId = `comment_${Date.now()}`;
+    const comment = {
+      id: commentId,
+      t: newComment.text,
+      c: newComment.priority === 'b-red' ? 'n-red' : newComment.priority === 'b-amb' ? 'n-amb' : 'n-blu'
+    };
+
+    // Add to current section
+    const updatedSections = SECS.map(section => {
+      if (section.id === selectedSection) {
+        return { ...section, note: comment };
+      }
+      return section;
+    });
+
+    setNewComment({ text: '', priority: 'b-blu' });
+    setShowAddComment(false);
+  };
   const toggleSection = (sectionId) => {
     setOpenSections((current) =>
       current.includes(sectionId) ? current.filter((id) => id !== sectionId) : [...current, sectionId]
@@ -257,16 +334,19 @@ function App() {
     setOpenSections(SECS.map((section) => section.id));
   };
 
-  if (!user) {
+  if (loading) {
     return (
-      <div className="login-screen">
-        <div className="login-message">
-          <h2>Connectez-vous avec GitHub</h2>
-          <p>Pour sauvegarder votre progression</p>
-          <button className="login-btn" onClick={handleLogin}>Se connecter</button>
+      <div className="loading-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Chargement...</p>
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Login />;
   }
 
   return (
@@ -294,27 +374,41 @@ function App() {
               <span className={`sidebar-badge ${section.badge.c}`}>{section.badge.t}</span>
             </div>
           ))}
+          <button className="add-section-btn" onClick={() => setShowAddSection(true)}>
+            ➕ Ajouter une section
+          </button>
         </div>
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>Déconnexion</button>
+          {/* Logout moved to header */}
         </div>
       </div>
       <div className="main-content">
         <div className="main-header">
           <h2 className="main-title">{SECS.find(s => s.id === selectedSection)?.nm}</h2>
-          <span className="status-label">{status}</span>
-          {saveStatus && (
-            <span className={`save-status${saveLoading ? ' loading' : ''}`}>{saveStatus}</span>
-          )}
+          <div className="header-actions">
+            <span className="status-label">{status}</span>
+            {saveStatus && (
+              <span className={`save-status${saveLoading ? ' loading' : ''}`}>{saveStatus}</span>
+            )}
+            <button className="logout-btn" onClick={handleLogout}>Déconnexion</button>
+          </div>
         </div>
         <div className="main-body">
+          <div className="action-buttons">
+            <button className="action-btn add-item-btn" onClick={() => setShowAddItem(true)}>
+              ➕ Ajouter un élément
+            </button>
+            <button className="action-btn add-comment-btn" onClick={() => setShowAddComment(true)}>
+              💬 Ajouter un commentaire
+            </button>
+          </div>
           {(() => {
             const section = SECS.find(s => s.id === selectedSection);
             return (
               <>
-                {section.note && <div className={`note ${section.note.c}`} dangerouslySetInnerHTML={{ __html: section.note.t }} />}
-                {section.chain && <Chain />}
-                {section.items.map((item) => (
+                {section?.note && <div className={`note ${section.note.c}`} dangerouslySetInnerHTML={{ __html: section.note.t }} />}
+                {section?.chain && <Chain />}
+                {section?.items.map((item) => (
                   <div key={item.id} className={`item${state[item.id] ? ' chk' : ''}`} onClick={() => handleToggle(item.id)}>
                     <div className="cbx">
                       <svg className="ck-ico" viewBox="0 0 11 9" fill="none">
@@ -330,7 +424,7 @@ function App() {
                           <div className="ihow-txt" dangerouslySetInnerHTML={{ __html: item.h }} />
                         </div>
                       )}
-                      <div className="tags">{item.g.map((tag) => <Tag key={tag} tag={tag} />)}</div>
+                      <div className="tags">{item.g?.map((tag) => <Tag key={tag} tag={tag} />)}</div>
                     </div>
                   </div>
                 ))}
@@ -339,6 +433,163 @@ function App() {
           })()}
         </div>
       </div>
+
+      {/* Add Item Modal */}
+      {showAddItem && (
+        <div className="modal-overlay" onClick={() => setShowAddItem(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Ajouter un nouvel élément</h3>
+            <div className="form-group">
+              <label>Titre *</label>
+              <input
+                type="text"
+                value={newItem.title}
+                onChange={(e) => setNewItem({...newItem, title: e.target.value})}
+                placeholder="Titre de l'élément"
+              />
+            </div>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea
+                value={newItem.description}
+                onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                placeholder="Description détaillée"
+                rows="3"
+              />
+            </div>
+            <div className="form-group">
+              <label>Comment obtenir</label>
+              <textarea
+                value={newItem.how}
+                onChange={(e) => setNewItem({...newItem, how: e.target.value})}
+                placeholder="Instructions pour obtenir ce document"
+                rows="3"
+              />
+            </div>
+            <div className="form-group">
+              <label>Tags</label>
+              <div className="tag-selector">
+                {['req', 'opt', 'don', 'inf'].map(tag => (
+                  <label key={tag} className="tag-option">
+                    <input
+                      type="checkbox"
+                      checked={newItem.tags.includes(tag)}
+                      onChange={(e) => {
+                        const tags = e.target.checked 
+                          ? [...newItem.tags, tag]
+                          : newItem.tags.filter(t => t !== tag);
+                        setNewItem({...newItem, tags});
+                      }}
+                    />
+                    {getTagLabel(tag)}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Priorité</label>
+              <select value={newItem.priority} onChange={(e) => setNewItem({...newItem, priority: e.target.value})}>
+                <option value="b-blu">Bleu (Normal)</option>
+                <option value="b-amb">Jaune (Important)</option>
+                <option value="b-red">Rouge (Urgent)</option>
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowAddItem(false)}>Annuler</button>
+              <button onClick={handleAddItem} className="primary-btn">Ajouter</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Section Modal */}
+      {showAddSection && (
+        <div className="modal-overlay" onClick={() => setShowAddSection(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Ajouter une nouvelle section</h3>
+            <div className="form-group">
+              <label>Nom de la section *</label>
+              <input
+                type="text"
+                value={newSection.name}
+                onChange={(e) => setNewSection({...newSection, name: e.target.value})}
+                placeholder="Nom de la section"
+              />
+            </div>
+            <div className="form-group">
+              <label>Icône</label>
+              <input
+                type="text"
+                value={newSection.icon}
+                onChange={(e) => setNewSection({...newSection, icon: e.target.value})}
+                placeholder="Emoji ou icône"
+              />
+            </div>
+            <div className="form-group">
+              <label>Couleur de fond</label>
+              <input
+                type="color"
+                value={newSection.color}
+                onChange={(e) => setNewSection({...newSection, color: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label>Badge</label>
+              <input
+                type="text"
+                value={newSection.badge.t}
+                onChange={(e) => setNewSection({...newSection, badge: {...newSection.badge, t: e.target.value}})}
+                placeholder="Texte du badge"
+              />
+              <select 
+                value={newSection.badge.c} 
+                onChange={(e) => setNewSection({...newSection, badge: {...newSection.badge, c: e.target.value}})}
+              >
+                <option value="b-blu">Bleu</option>
+                <option value="b-grn">Vert</option>
+                <option value="b-amb">Jaune</option>
+                <option value="b-red">Rouge</option>
+                <option value="b-pur">Violet</option>
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowAddSection(false)}>Annuler</button>
+              <button onClick={handleAddSection} className="primary-btn">Ajouter</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Comment Modal */}
+      {showAddComment && (
+        <div className="modal-overlay" onClick={() => setShowAddComment(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Ajouter un commentaire</h3>
+            <div className="form-group">
+              <label>Commentaire *</label>
+              <textarea
+                value={newComment.text}
+                onChange={(e) => setNewComment({...newComment, text: e.target.value})}
+                placeholder="Texte du commentaire"
+                rows="4"
+              />
+            </div>
+            <div className="form-group">
+              <label>Priorité</label>
+              <select value={newComment.priority} onChange={(e) => setNewComment({...newComment, priority: e.target.value})}>
+                <option value="b-blu">Bleu (Info)</option>
+                <option value="b-grn">Vert (Succès)</option>
+                <option value="b-amb">Jaune (Attention)</option>
+                <option value="b-red">Rouge (Important)</option>
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowAddComment(false)}>Annuler</button>
+              <button onClick={handleAddComment} className="primary-btn">Ajouter</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
