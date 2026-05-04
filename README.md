@@ -46,10 +46,29 @@ Checklist interactive complète pour la demande de **visa long séjour étudiant
 - Configurer `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` dans votre plateforme de déploiement
 - Utiliser HTTPS pour le site et pour les callbacks OAuth
 
+### Déploiement sur Vercel
+
+1. **Variables d'environnement dans Vercel :**
+   - `VITE_SUPABASE_URL` : Votre URL Supabase
+   - `VITE_SUPABASE_ANON_KEY` : Votre clé publique Supabase
+   - `VITE_OAUTH_REDIRECT_URL` : `https://votre-domaine.vercel.app`
+
+2. **Configuration GitHub OAuth :**
+   - Aller dans votre [GitHub App Settings](https://github.com/settings/apps)
+   - Dans "Authorization callback URL", ajouter : `https://votre-domaine.vercel.app`
+   - Garder aussi `http://localhost:5181` pour le développement local
+
+3. **Configuration Supabase :**
+   - Dans votre dashboard Supabase → Authentication → Providers
+   - Activer GitHub provider
+   - Ajouter vos credentials GitHub App (Client ID et Secret)
+   - Dans "Redirect URLs", ajouter : `https://votre-domaine.vercel.app`
+
 ### Déploiement recommandé
 
 - Vite build : `npm run build`
 - Servir le dossier `dist/`
+- Ou utiliser Vercel pour un déploiement automatique depuis GitHub
 
 ## 📌 Notes importantes
 

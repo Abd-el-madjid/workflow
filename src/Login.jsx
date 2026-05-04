@@ -6,10 +6,11 @@ const Login = () => {
 
   const handleGitHubLogin = async () => {
     setLoginError('');
+    const redirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL || window.location.origin;
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: redirectUrl
       }
     });
     if (error) {
