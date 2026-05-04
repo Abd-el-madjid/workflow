@@ -1,597 +1,258 @@
-﻿import Login from './Login';
+﻿import React, { useState, useEffect, useMemo } from 'react';
+import { supabaseClient } from './supabaseClient';
+import Login from './Login';
+import Header from './Header';
+import Sidebar from './Sidebar';
+import MainContent from './MainContent';
+import { BEFORE_SECS, AFTER_SECS } from './data';
 
-const SECS = [
-  {
-    id: 'cf', ico: '🎓', bg: '#eff6ff', nm: 'Campus France — Documents officiels', badge: { t: 'Obligatoire', c: 'b-red' },
-    note: { t: '<strong>Important :</strong> Après ton RDV de vérification mercredi, ton message de fin de procédure sera envoyé automatiquement par email. <strong>Surveille ta boîte mail</strong> dès mercredi soir.', c: 'n-blu' },
-    items: [
-      { id: 'cf1', t: 'Message de fin de procédure Campus France', d: 'Email envoyé automatiquement après validation de l\'authentification de tes diplômes. À imprimer et joindre OBLIGATOIREMENT.', h: 'Attendu après le RDV de vérification de mercredi. Vérifie sur ton compte <strong>etudes-en-france.fr</strong>.', g: ['req', 'Après mercredi'] },
-      { id: 'cf2', t: 'Attestation de préinscription / d\'admission M2', d: 'Document officiel confirmant ton inscription au M2 Systèmes Logiciels.', h: 'Téléchargeable sur ton compte <strong>Études en France</strong>.', g: ['req'] },
-      { id: 'cf3', t: 'Formulaire France-Visas rempli + signé', d: 'Format long séjour étudiant. À imprimer et signer à la main.', h: 'Remplir sur <strong><a href="https://france-visas.gouv.fr">france-visas.gouv.fr</a></strong>.', g: ['req'] },
-    ]
-  },
-  {
-    id: 'au', ico: '📜', bg: '#fffbeb', nm: 'Diplômes & Authentification', badge: { t: 'En cours', c: 'b-amb' },
-    note: { t: '<strong>MAE Constantine = NON OBLIGATOIRE pour le visa France.</strong> La légalisation n\'est pas requise pour le dossier France.', c: 'n-grn' },
-    chain: true,
-    items: [
-      { id: 'au1', t: 'Diplôme universitaire original authentifié', d: 'Retirer l\'original authentifié par Campus France.', h: 'Faire des copies certifiées conformes après récupération.', g: ['req', 'Dimanche'] },
-      { id: 'au2', t: 'Relevés de notes universitaires', d: 'Toutes les années, depuis L1 jusqu\'au dernier diplôme.', h: 'Si certains relevés sont en arabe, prévoir une traduction assermentée.', g: ['req'] },
-      { id: 'au3', t: 'Attestation de réussite provisoire', d: 'Utilisable si le diplôme définitif n\'est pas encore prêt.', h: 'Demandée à la scolarité de ton université.', g: ['opt'] },
-    ]
-  },
-  {
-    id: 'id', ico: '🪪', bg: '#f0fdf4', nm: 'Identité & Documents civils', badge: { t: 'À préparer', c: 'b-amb' },
-    items: [
-      { id: 'id1', t: 'Passeport en cours de validité + photocopies', d: 'Validité minimum : date de fin du visa + 3 mois.', h: 'Photocopier toutes les pages importantes et celles avec tampons.', g: ['req'] },
-      { id: 'id2', t: 'Photos d\'identité normes OACI', d: '35×45 mm, fond blanc, visage dégagé.', h: 'Mieux vaut un photographe professionnel.', g: ['req'] },
-      { id: 'id3', t: 'Acte de naissance avec filiation', d: 'Original et copie. Traduction assermentée si nécessaire.', h: 'Obtenu à la mairie (APC) de la commune de naissance.', g: ['req'] },
-      { id: 'id4', t: 'Fiche familiale d\'état civil', d: 'Prouve la composition de la famille et le lien avec le garant.', h: 'Prélevée au service d\'état civil de ton domicile familial.', g: ['req'] },
-      { id: 'id5', t: 'Casier judiciaire bulletin n°3', d: 'Extrait vierge requis pour visa long séjour.', h: 'Demander en ligne sur justice.gov.dz ou au tribunal.', g: ['req'] },
-    ]
-  },
-  {
-    id: 'fi', ico: '💰', bg: '#faf5ff', nm: 'Finances personnelles', badge: { t: 'Attention', c: 'b-amb' },
-    note: { t: 'Ton emploi récent + tes relevés CCP sont acceptables si tu complètes avec un garant en France.', c: 'n-amb' },
-    items: [
-      { id: 'fi1', t: 'Attestation de travail/employeur', d: 'Officielle, sur papier en-tête avec salaire.', h: 'Doit mentionner ton poste, date de début et salaire.', g: ['req'] },
-      { id: 'fi2', t: 'Bulletins de salaire disponibles', d: 'Même 1 ou 2 mois sont utiles.', h: 'Présente tous les bulletins que tu as.', g: ['req'] },
-      { id: 'fi3', t: 'Relevés CCP', d: 'Relevés du compte postal algérien.', h: 'Imprimer les mois disponibles.', g: ['req'] },
-      { id: 'fi4', t: 'CV actualisé', d: 'Important pour un étudiant en reprise d\'étude.', h: '1 à 2 pages, en français, clair et professionnel.', g: ['req'] },
-    ]
-  },
-  {
-    id: 'gfr', ico: '🗼', bg: '#f0fdf4', nm: 'Garant France — Belle-sœur', badge: { t: 'Pièce maîtresse', c: 'b-grn' },
-    note: { t: 'La belle-sœur doit prouver des revenus suffisants et légaliser sa prise en charge.', c: 'n-grn' },
-    items: [
-      { id: 'gf1', t: 'Attestation de prise en charge', d: 'Engagement de prise en charge pour l\'année.', h: 'Doit être légalisée à la mairie de Paris ou chez un notaire.', g: ['req'] },
-      { id: 'gf2', t: 'Bulletins de salaire de la garante', d: '3 derniers bulletins pour prouver les revenus.', h: 'Salaire net visible et cohérent avec l\'engagement.', g: ['req'] },
-      { id: 'gf3', t: 'Relevés bancaires de la garante', d: '3 derniers mois du compte français.', h: 'Téléchargeables en PDF depuis la banque.', g: ['req'] },
-    ]
-  },
-  {
-    id: 'lgt', ico: '🏨', bg: '#eff6ff', nm: 'Hébergement', badge: { t: 'Réservation faite', c: 'b-grn' },
-    note: { t: 'Une réservation hôtel + lettre explicative est acceptée si le CROUS n\'est pas confirmé.', c: 'n-amb' },
-    items: [
-      { id: 'lo1', t: 'Confirmation hôtel Besançon', d: 'Document d\'hébergement provisoire.', h: 'Imprimer la confirmation Agoda ou équivalent.', g: ['don'] },
-      { id: 'lo2', t: 'Lettre explicative hébergement', d: 'Expliquer ton plan logement et la demande CROUS future.', h: 'Dire que tu feras la demande CROUS le 7 juillet.', g: ['req'] },
-    ]
-  },
-  {
-    id: 'rdv', ico: '📋', bg: '#fff1f2', nm: 'RDV CAPAGO 8 juin', badge: { t: 'Important', c: 'b-red' },
-    note: { t: 'Vérifie bien ta circonscription consulaire et apporte originaux + copies.', c: 'n-red' },
-    items: [
-      { id: 'rd1', t: 'Convocation CAPAGO imprimée', d: 'Présentation du RDV au centre.', h: 'Imprimer l\'email de confirmation.', g: ['req'] },
-      { id: 'rd2', t: 'Frais en espèces DZD', d: 'Frais CAPAGO + consulat en DZD.', h: 'Prévoir un peu plus selon le taux du jour.', g: ['req'] },
-      { id: 'rd3', t: 'Dossier classé + copies', d: 'Originaux et copies pour chaque document.', h: 'Organiser les documents par section.', g: ['req'] },
-    ]
-  },
-];
+// ─── helpers ───────────────────────────────────────────────
+const ALL_SECS = [...BEFORE_SECS, ...AFTER_SECS];
 
 const createInitialState = () => {
-  const init = {};
-  SECS.forEach((section) => {
-    section.items.forEach((item) => {
-      init[item.id] = false;
-    });
-  });
-  return init;
+  const s = {};
+  ALL_SECS.forEach(sec => sec.items.forEach(i => { s[i.id] = false; }));
+  return s;
 };
 
-const getTagLabel = (tag) => {
-  if (tag === 'req') return 'Obligatoire';
-  if (tag === 'opt') return 'Recommandé';
-  if (tag === 'don') return 'Déjà fait ✓';
-  if (tag === 'inf') return 'Info utile';
-  return tag;
-};
-
-const Tag = ({ tag }) => {
-  const className =
-    tag === 'req' ? 't-req' :
-    tag === 'opt' ? 't-opt' :
-    tag === 'don' ? 't-don' :
-    tag === 'inf' ? 't-inf' :
-    't-urg';
-
-  return <span className={`tag ${className}`}>{getTagLabel(tag)}</span>;
-};
-
-const Chain = () => (
-  <div className="chain">
-    <div className="chain-t">Chaîne d\'authentification — diplômes algériens vers France</div>
-    <div className="chain-steps">
-      <div className="cstep cs1"><div className="csdot">1</div><div className="cslbl">Campus France authentifie</div></div>
-      <span className="cs-arr">→</span>
-      <div className="cstep cs2"><div className="csdot">2</div><div className="cslbl">RDV vérif. mercredi</div></div>
-      <span className="cs-arr">→</span>
-      <div className="cstep cs3"><div className="csdot">3</div><div className="cslbl">Message fin de procédure</div></div>
-      <span className="cs-arr">→</span>
-      <div className="cstep cs4"><div className="csdot">4</div><div className="cslbl">MAE Constantine — non requis visa France</div></div>
-    </div>
-  </div>
-);
-
-function App() {
-  const [state, setState] = useState(createInitialState());
-  const [user, setUser] = useState(null);
+// ─── Main App ───────────────────────────────────────────────
+export default function App() {
+  const [state, setState] = useState(createInitialState);
+  const [user, setUser]   = useState(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState('Non connecté');
-  const [openSections, setOpenSections] = useState([]);
   const [saveStatus, setSaveStatus] = useState('');
   const [saveLoading, setSaveLoading] = useState(false);
-  const [selectedSection, setSelectedSection] = useState(SECS[0].id);
-  const [showAddItem, setShowAddItem] = useState(false);
-  const [showAddSection, setShowAddSection] = useState(false);
-  const [showAddComment, setShowAddComment] = useState(false);
-  const [newItem, setNewItem] = useState({ title: '', description: '', how: '', tags: [], priority: 'b-blu' });
-  const [newSection, setNewSection] = useState({ name: '', icon: '', color: '#eff6ff', badge: { t: 'Nouveau', c: 'b-blu' } });
-  const [newComment, setNewComment] = useState({ text: '', priority: 'b-blu' });
 
-  const total = useMemo(() => Object.keys(state).length, [state]);
+  // navigation: 'before' | 'after' | 'letters'
+  const [phase, setPhase]       = useState('before');
+  const [selectedId, setSelectedId] = useState(BEFORE_SECS[0].id);
+  const [expandedItems, setExpandedItems] = useState({});
+
+  const total   = useMemo(() => Object.keys(state).length, [state]);
   const checked = useMemo(() => Object.values(state).filter(Boolean).length, [state]);
-  const percent = total ? Math.round((checked / total) * 100) : 0;
+  const pct     = total ? Math.round(checked / total * 100) : 0;
 
-  useEffect(() => {
-    const saved = localStorage.getItem('visaChecklistState');
-    if (saved) {
-      try {
-        setState((current) => ({ ...current, ...JSON.parse(saved) }));
-      } catch (error) {
-        console.error('Error loading state:', error);
+  const ensureTablesExist = async () => {
+    try {
+      // Try to access the tables to check if they exist
+      const { error: checklistError } = await supabaseClient
+        .from('checklist_states')
+        .select('id')
+        .limit(1);
+
+      if (checklistError) {
+        console.warn('Checklist table may not exist:', checklistError.message);
       }
+
+      const { error: lettersError } = await supabaseClient
+        .from('user_letters')
+        .select('id')
+        .limit(1);
+
+      if (lettersError) {
+        console.warn('Letters table may not exist:', lettersError.message);
+      }
+
+      // Check storage bucket
+      const { error: storageError } = await supabaseClient.storage
+        .listBuckets();
+
+      if (storageError) {
+        console.warn('Storage access error:', storageError.message);
+      }
+    } catch (error) {
+      console.error('Error checking database setup:', error);
     }
+  };
+  useEffect(() => {
+    const saved = localStorage.getItem('vsChecklist');
+    if (saved) { try { setState(p => ({ ...p, ...JSON.parse(saved) })); } catch {} }
 
     const init = async () => {
       try {
-        console.log('Checking authentication...');
-        if (!supabaseClient) {
-          console.error('Supabase client not available');
-          setLoading(false);
-          return;
+        const { data: redirectData, error: redirectError } = await supabaseClient.auth.getSessionFromUrl();
+        if (redirectError && redirectError.message) {
+          console.warn('OAuth redirect parse warning:', redirectError.message);
         }
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (error) {
-          console.error('Auth error:', error);
+
+        const sessionFromUrl = redirectData?.session;
+        let u = sessionFromUrl?.user ?? null;
+
+        if (!u) {
+          const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+          if (sessionError && sessionError.message) {
+            console.warn('getSession warning:', sessionError.message);
+          }
+          u = sessionData?.session?.user ?? null;
         }
-        const currentUser = data.session ? data.session.user : null;
-        console.log('Current user:', currentUser);
-        if (currentUser) {
-          setUser(currentUser);
-          setStatus(`Connecté : ${currentUser.email}`);
-          await loadRemoteState(currentUser);
-        } else {
-          setStatus('Non connecté');
+
+        setUser(u);
+        if (u) {
+          await ensureTablesExist();
+          await loadRemote(u);
         }
-      } catch (error) {
-        console.error('Init error:', error);
+      } catch (e) {
+        console.error('Init error:', e);
       } finally {
-        console.log('Setting loading to false');
         setLoading(false);
       }
     };
-
     init();
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session ? session.user : null;
-      setUser(currentUser);
-      setStatus(currentUser ? `Connecté : ${currentUser.email}` : 'Non connecté');
-      if (currentUser) {
-        loadRemoteState(currentUser);
+
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(async (_e, session) => {
+      const u = session?.user ?? null;
+      console.log('Auth state changed, user:', u?.id);
+      setUser(u);
+      if (u) {
+        await ensureTablesExist();
+        await loadRemote(u);
+      } else {
+        // Clear data when logged out
+        setState(createInitialState());
+        localStorage.removeItem('vsChecklist');
       }
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('visaChecklistState', JSON.stringify(state));
-  }, [state]);
+  useEffect(() => { localStorage.setItem('vsChecklist', JSON.stringify(state)); }, [state]);
 
-  const loadRemoteState = async (currentUser) => {
-    if (!currentUser) return;
-    const { data, error } = await supabaseClient
-      .from('checklist_states')
-      .select('state')
-      .eq('user_id', currentUser.id)
-      .single();
+  const loadRemote = async (u) => {
+    try {
+      const { data, error } = await supabaseClient
+        .from('checklist_states').select('state').eq('user_id', u.id).single();
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Supabase load error:', error);
-      return;
-    }
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error loading checklist:', error);
+        return;
+      }
 
-    if (data?.state) {
-      setState(data.state);
-      localStorage.setItem('visaChecklistState', JSON.stringify(data.state));
+      if (data?.state) {
+        console.log('Loaded checklist state:', Object.keys(data.state).length, 'items');
+        setState(data.state);
+      } else {
+        console.log('No saved checklist found, using defaults');
+      }
+    } catch (error) {
+      console.error('Error in loadRemote:', error);
     }
   };
 
-  const saveRemoteState = async (nextState) => {
+  const saveRemote = async (next) => {
     if (!user) {
-      setSaveStatus('Non connecté — pas de sauvegarde');
-      setSaveLoading(false);
-      setTimeout(() => setSaveStatus(''), 3000);
+      console.log('❌ Checklist save failed: No user logged in');
       return;
     }
 
-    setSaveStatus('Sauvegarde...');
+    const startTime = Date.now();
     setSaveLoading(true);
+    setSaveStatus('Sauvegarde...');
 
-    const { error } = await supabaseClient
-      .from('checklist_states')
-      .upsert({ user_id: user.id, state: nextState, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    console.log(`🔄 Starting checklist save at ${new Date().toISOString()}`);
+    console.log('📊 Saving state:', {
+      total_items: Object.keys(next).length,
+      checked_items: Object.values(next).filter(Boolean).length,
+      user_id: user.id
+    });
 
-    if (error) {
-      console.error('Supabase save error:', error);
-      setSaveStatus('Erreur de sauvegarde');
+    try {
+      const response = await supabaseClient.from('checklist_states')
+        .upsert({
+          user_id: user.id,
+          state: next,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+
+      const duration = Date.now() - startTime;
+      console.log('Supabase save response:', response);
+
+      if (response.error) {
+        console.error('❌ Checklist save error:', response.error);
+        setSaveStatus(`Erreur: ${response.error.message}`);
+      } else {
+        console.log(`✅ Checklist saved successfully in ${duration}ms`);
+        setSaveStatus(`✓ Sauvegardé (${duration}ms)`);
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      console.error(`❌ Checklist save exception (${duration}ms):`, error);
+      setSaveStatus(`Erreur: ${error.message || 'Échec'}`);
+    } finally {
       setSaveLoading(false);
-      setTimeout(() => setSaveStatus(''), 4000);
-    } else {
-      setSaveStatus('Sauvegardé ✓');
-      setSaveLoading(false);
-      setTimeout(() => setSaveStatus(''), 2000);
+      setTimeout(() => setSaveStatus(''), 3500);
     }
   };
 
-  const handleToggle = (id) => {
-    setState((current) => {
-      const next = { ...current, [id]: !current[id] };
-      saveRemoteState(next);
-      return next;
-    });
+  const toggle = (id) => {
+    setState(p => { const n = { ...p, [id]: !p[id] }; saveRemote(n); return n; });
   };
 
-  const handleReset = () => {
-    if (!window.confirm('Réinitialiser toutes les cases ?')) return;
-    const next = createInitialState();
-    setState(next);
-    saveRemoteState(next);
+  const reset = () => {
+    if (!confirm('Réinitialiser toutes les cases ?')) return;
+    const n = createInitialState(); setState(n); saveRemote(n);
   };
 
-  const handleLogout = async () => {
-    await supabaseClient.auth.signOut();
-    setUser(null);
-    setStatus('Déconnecté');
-  };
-  const handleAddItem = () => {
-    if (!newItem.title.trim()) return;
-    
-    const itemId = `custom_${Date.now()}`;
-    const item = {
-      id: itemId,
-      t: newItem.title,
-      d: newItem.description,
-      h: newItem.how,
-      g: newItem.tags,
-      priority: newItem.priority
-    };
+  const toggleExpand = (id) => setExpandedItems(p => ({ ...p, [id]: !p[id] }));
 
-    // Add to current section
-    const updatedSections = SECS.map(section => {
-      if (section.id === selectedSection) {
-        return { ...section, items: [...section.items, item] };
+  const handlePhase = (p, firstId) => { setPhase(p); setSelectedId(firstId); };
+
+  const logout = async () => {
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        console.error('Logout failed:', error);
+        return;
       }
-      return section;
-    });
-
-    // Update SECS (in a real app, this would be saved to database)
-    // For now, we'll just update the state
-    setState(prev => ({ ...prev, [itemId]: false }));
-    
-    setNewItem({ title: '', description: '', how: '', tags: [], priority: 'b-blu' });
-    setShowAddItem(false);
+      console.log('User logged out successfully');
+      setUser(null);
+      setState(createInitialState());
+      localStorage.removeItem('vsChecklist');
+      window.location.href = window.location.origin;
+    } catch (error) {
+      console.error('Logout exception:', error);
+    }
   };
 
-  const handleAddSection = () => {
-    if (!newSection.name.trim()) return;
-    
-    const sectionId = `custom_${Date.now()}`;
-    const section = {
-      id: sectionId,
-      ico: newSection.icon || '📝',
-      bg: newSection.color,
-      nm: newSection.name,
-      badge: newSection.badge,
-      items: []
-    };
+  // ── active section render ──
+  const activeSecs = phase === 'before' ? BEFORE_SECS : AFTER_SECS;
+  const activeSection = activeSecs.find(s => s.id === selectedId);
 
-    // Add to SECS (in a real app, this would be saved to database)
-    SECS.push(section);
-    
-    setNewSection({ name: '', icon: '', color: '#eff6ff', badge: { t: 'Nouveau', c: 'b-blu' } });
-    setShowAddSection(false);
-  };
-
-  const handleAddComment = () => {
-    if (!newComment.text.trim()) return;
-    
-    const commentId = `comment_${Date.now()}`;
-    const comment = {
-      id: commentId,
-      t: newComment.text,
-      c: newComment.priority === 'b-red' ? 'n-red' : newComment.priority === 'b-amb' ? 'n-amb' : 'n-blu'
-    };
-
-    // Add to current section
-    const updatedSections = SECS.map(section => {
-      if (section.id === selectedSection) {
-        return { ...section, note: comment };
-      }
-      return section;
-    });
-
-    setNewComment({ text: '', priority: 'b-blu' });
-    setShowAddComment(false);
-  };
-  const toggleSection = (sectionId) => {
-    setOpenSections((current) =>
-      current.includes(sectionId) ? current.filter((id) => id !== sectionId) : [...current, sectionId]
-    );
-  };
-
-  const openAllSections = () => {
-    setOpenSections(SECS.map((section) => section.id));
-  };
-
-  if (loading) {
-    return (
-      <div className="loading-page">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Chargement...</p>
-        </div>
+  if (loading) return (
+    <div className="splash">
+      <div className="splash-inner">
+        <div className="spinner" />
+        <p>Chargement...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (!user) {
-    return <Login />;
-  }
+  if (!user) return <Login />;
 
   return (
-    <div className="app-layout">
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <h1 className="sidebar-title">Visa Checklist</h1>
-          <div className="prog-wrap">
-            <div className="prog-bar" style={{ width: `${percent}%` }} />
-          </div>
-          <div className="prog-lbl">{checked} / {total} ({percent}%)</div>
-        </div>
-        <div className="sidebar-sections">
-          {SECS.map((section) => (
-            <div
-              key={section.id}
-              className={`sidebar-item${selectedSection === section.id ? ' active' : ''}`}
-              onClick={() => setSelectedSection(section.id)}
-            >
-              <div className="sidebar-ico" style={{ background: section.bg }}>{section.ico}</div>
-              <div className="sidebar-info">
-                <div className="sidebar-name">{section.nm}</div>
-                <div className="sidebar-cnt">{section.items.filter((item) => state[item.id]).length}/{section.items.length}</div>
-              </div>
-              <span className={`sidebar-badge ${section.badge.c}`}>{section.badge.t}</span>
-            </div>
-          ))}
-          <button className="add-section-btn" onClick={() => setShowAddSection(true)}>
-            ➕ Ajouter une section
-          </button>
-        </div>
-        <div className="sidebar-footer">
-          {/* Logout moved to header */}
-        </div>
-      </div>
-      <div className="main-content">
-        <div className="main-header">
-          <h2 className="main-title">{SECS.find(s => s.id === selectedSection)?.nm}</h2>
-          <div className="header-actions">
-            <span className="status-label">{status}</span>
-            {saveStatus && (
-              <span className={`save-status${saveLoading ? ' loading' : ''}`}>{saveStatus}</span>
-            )}
-            <button className="logout-btn" onClick={handleLogout}>Déconnexion</button>
-          </div>
-        </div>
-        <div className="main-body">
-          <div className="action-buttons">
-            <button className="action-btn add-item-btn" onClick={() => setShowAddItem(true)}>
-              ➕ Ajouter un élément
-            </button>
-            <button className="action-btn add-comment-btn" onClick={() => setShowAddComment(true)}>
-              💬 Ajouter un commentaire
-            </button>
-          </div>
-          {(() => {
-            const section = SECS.find(s => s.id === selectedSection);
-            return (
-              <>
-                {section?.note && <div className={`note ${section.note.c}`} dangerouslySetInnerHTML={{ __html: section.note.t }} />}
-                {section?.chain && <Chain />}
-                {section?.items.map((item) => (
-                  <div key={item.id} className={`item${state[item.id] ? ' chk' : ''}`} onClick={() => handleToggle(item.id)}>
-                    <div className="cbx">
-                      <svg className="ck-ico" viewBox="0 0 11 9" fill="none">
-                        <path d="M1 4L4.5 7.5L10 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <div className="ibody">
-                      <div className="ititle">{item.t}</div>
-                      <div className="idet">{item.d}</div>
-                      {item.h && (
-                        <div className="ihow">
-                          <div className="ihow-title">📌 Comment obtenir / faire</div>
-                          <div className="ihow-txt" dangerouslySetInnerHTML={{ __html: item.h }} />
-                        </div>
-                      )}
-                      <div className="tags">{item.g?.map((tag) => <Tag key={tag} tag={tag} />)}</div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* Add Item Modal */}
-      {showAddItem && (
-        <div className="modal-overlay" onClick={() => setShowAddItem(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Ajouter un nouvel élément</h3>
-            <div className="form-group">
-              <label>Titre *</label>
-              <input
-                type="text"
-                value={newItem.title}
-                onChange={(e) => setNewItem({...newItem, title: e.target.value})}
-                placeholder="Titre de l'élément"
-              />
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                value={newItem.description}
-                onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                placeholder="Description détaillée"
-                rows="3"
-              />
-            </div>
-            <div className="form-group">
-              <label>Comment obtenir</label>
-              <textarea
-                value={newItem.how}
-                onChange={(e) => setNewItem({...newItem, how: e.target.value})}
-                placeholder="Instructions pour obtenir ce document"
-                rows="3"
-              />
-            </div>
-            <div className="form-group">
-              <label>Tags</label>
-              <div className="tag-selector">
-                {['req', 'opt', 'don', 'inf'].map(tag => (
-                  <label key={tag} className="tag-option">
-                    <input
-                      type="checkbox"
-                      checked={newItem.tags.includes(tag)}
-                      onChange={(e) => {
-                        const tags = e.target.checked 
-                          ? [...newItem.tags, tag]
-                          : newItem.tags.filter(t => t !== tag);
-                        setNewItem({...newItem, tags});
-                      }}
-                    />
-                    {getTagLabel(tag)}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Priorité</label>
-              <select value={newItem.priority} onChange={(e) => setNewItem({...newItem, priority: e.target.value})}>
-                <option value="b-blu">Bleu (Normal)</option>
-                <option value="b-amb">Jaune (Important)</option>
-                <option value="b-red">Rouge (Urgent)</option>
-              </select>
-            </div>
-            <div className="modal-actions">
-              <button onClick={() => setShowAddItem(false)}>Annuler</button>
-              <button onClick={handleAddItem} className="primary-btn">Ajouter</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Section Modal */}
-      {showAddSection && (
-        <div className="modal-overlay" onClick={() => setShowAddSection(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Ajouter une nouvelle section</h3>
-            <div className="form-group">
-              <label>Nom de la section *</label>
-              <input
-                type="text"
-                value={newSection.name}
-                onChange={(e) => setNewSection({...newSection, name: e.target.value})}
-                placeholder="Nom de la section"
-              />
-            </div>
-            <div className="form-group">
-              <label>Icône</label>
-              <input
-                type="text"
-                value={newSection.icon}
-                onChange={(e) => setNewSection({...newSection, icon: e.target.value})}
-                placeholder="Emoji ou icône"
-              />
-            </div>
-            <div className="form-group">
-              <label>Couleur de fond</label>
-              <input
-                type="color"
-                value={newSection.color}
-                onChange={(e) => setNewSection({...newSection, color: e.target.value})}
-              />
-            </div>
-            <div className="form-group">
-              <label>Badge</label>
-              <input
-                type="text"
-                value={newSection.badge.t}
-                onChange={(e) => setNewSection({...newSection, badge: {...newSection.badge, t: e.target.value}})}
-                placeholder="Texte du badge"
-              />
-              <select 
-                value={newSection.badge.c} 
-                onChange={(e) => setNewSection({...newSection, badge: {...newSection.badge, c: e.target.value}})}
-              >
-                <option value="b-blu">Bleu</option>
-                <option value="b-grn">Vert</option>
-                <option value="b-amb">Jaune</option>
-                <option value="b-red">Rouge</option>
-                <option value="b-pur">Violet</option>
-              </select>
-            </div>
-            <div className="modal-actions">
-              <button onClick={() => setShowAddSection(false)}>Annuler</button>
-              <button onClick={handleAddSection} className="primary-btn">Ajouter</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add Comment Modal */}
-      {showAddComment && (
-        <div className="modal-overlay" onClick={() => setShowAddComment(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Ajouter un commentaire</h3>
-            <div className="form-group">
-              <label>Commentaire *</label>
-              <textarea
-                value={newComment.text}
-                onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-                placeholder="Texte du commentaire"
-                rows="4"
-              />
-            </div>
-            <div className="form-group">
-              <label>Priorité</label>
-              <select value={newComment.priority} onChange={(e) => setNewComment({...newComment, priority: e.target.value})}>
-                <option value="b-blu">Bleu (Info)</option>
-                <option value="b-grn">Vert (Succès)</option>
-                <option value="b-amb">Jaune (Attention)</option>
-                <option value="b-red">Rouge (Important)</option>
-              </select>
-            </div>
-            <div className="modal-actions">
-              <button onClick={() => setShowAddComment(false)}>Annuler</button>
-              <button onClick={handleAddComment} className="primary-btn">Ajouter</button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="layout">
+      <Header user={user} onLogout={logout} />
+      <Sidebar
+        phase={phase}
+        selectedId={selectedId}
+        state={state}
+        checked={checked}
+        total={total}
+        pct={pct}
+        onPhaseChange={handlePhase}
+        onSelectSection={setSelectedId}
+        onReset={reset}
+      />
+      <MainContent
+        phase={phase}
+        activeSection={activeSection}
+        state={state}
+        saveStatus={saveStatus}
+        saveLoading={saveLoading}
+        expandedItems={expandedItems}
+        onToggle={toggle}
+        onToggleExpand={toggleExpand}
+        user={user}
+      />
     </div>
   );
 }
-
-export default App;

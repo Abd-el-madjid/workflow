@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { supabaseClient } from './supabaseClient';
 
 const Login = () => {
+  const [loginError, setLoginError] = useState('');
+
   const handleGitHubLogin = async () => {
+    setLoginError('');
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'github',
       options: {
@@ -10,7 +13,8 @@ const Login = () => {
       }
     });
     if (error) {
-      console.error('Error logging in:', error.message);
+      console.error('Error logging in:', error);
+      setLoginError(error.message || 'Erreur de connexion');
     }
   };
 
@@ -36,6 +40,7 @@ const Login = () => {
         </div>
         <div className="login-footer">
           <p className="login-footer-text">Accès sécurisé et synchronisé</p>
+          {loginError && <p className="login-error-text">{loginError}</p>}
         </div>
       </div>
     </div>
