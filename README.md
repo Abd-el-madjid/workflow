@@ -40,6 +40,38 @@ Checklist interactive complète pour la demande de **visa long séjour étudiant
 3. Installer les dépendances : `npm install`
 4. Lancer le projet : `npm run dev`
 
+### Variables d'environnement
+
+Copiez `.env.example` vers `.env` et configurez :
+
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key
+
+# OAuth Configuration
+VITE_OAUTH_REDIRECT_URL=https://your-domain.vercel.app
+
+# File Upload Configuration
+VITE_SIGNED_URL_EXPIRY=3600          # Signed URL expiry in seconds (default: 3600 = 1 hour)
+VITE_MAX_FILE_SIZE_MB=10              # Maximum file size in MB (default: 10)
+
+# UI Configuration
+VITE_MODAL_TIMEOUT_MS=3000            # Modal display duration in ms (default: 3000)
+VITE_SAVE_STATUS_TIMEOUT_MS=3500      # Save status message duration in ms (default: 3500)
+```
+
+### Sécurité en production
+
+L'application inclut plusieurs mesures de sécurité :
+
+- **CSP (Content Security Policy)** : Empêche l'exécution de scripts non autorisés et les attaques XSS
+- **X-Frame-Options: DENY** : Empêche l'intégration dans des iframes (résout les erreurs localhost:3000)
+- **X-Content-Type-Options: nosniff** : Empêche le sniffing de type MIME
+- **Referrer-Policy** : Contrôle les informations de référent envoyées
+- **Permissions-Policy** : Désactive l'accès à la caméra, micro et géolocalisation
+- **Toutes les valeurs sensibles** : Stockées dans des variables d'environnement
+
 ### En production
 
 - Ne pas committer `.env` dans le dépôt
@@ -52,11 +84,15 @@ Checklist interactive complète pour la demande de **visa long séjour étudiant
    - `VITE_SUPABASE_URL` : Votre URL Supabase
    - `VITE_SUPABASE_ANON_KEY` : Votre clé publique Supabase
    - `VITE_OAUTH_REDIRECT_URL` : `https://votre-domaine.vercel.app`
+   - `VITE_SIGNED_URL_EXPIRY` : `3600` (1 heure pour les URLs signées)
+   - `VITE_MAX_FILE_SIZE_MB` : `10` (taille max des fichiers)
+   - `VITE_MODAL_TIMEOUT_MS` : `3000` (durée d'affichage des modales)
+   - `VITE_SAVE_STATUS_TIMEOUT_MS` : `3500` (durée des messages de statut)
 
 2. **Configuration GitHub OAuth :**
    - Aller dans votre [GitHub App Settings](https://github.com/settings/apps)
    - Dans "Authorization callback URL", ajouter : `https://votre-domaine.vercel.app`
-   - Garder aussi `http://localhost:5181` pour le développement local
+   - Pour le développement local, ajouter l'URL de votre serveur dev (généralement `http://localhost:5173` ou similaire)
 
 3. **Configuration Supabase :**
    - Dans votre dashboard Supabase → Authentication → Providers

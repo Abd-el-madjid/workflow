@@ -179,7 +179,8 @@ export default function App() {
       setSaveStatus(`Erreur: ${error.message || 'Échec'}`);
     } finally {
       setSaveLoading(false);
-      setTimeout(() => setSaveStatus(''), 3500);
+      const saveStatusTimeout = parseInt(import.meta.env.VITE_SAVE_STATUS_TIMEOUT_MS) || 3500;
+      setTimeout(() => setSaveStatus(''), saveStatusTimeout);
     }
   };
 

@@ -48,7 +48,8 @@ const LettersPanel = ({ user }) => {
 
   const showModal = (title, message, type = 'info') => {
     setModal({ show: true, title, message, type });
-    setTimeout(() => setModal({ show: false, title: '', message: '', type: 'info' }), 3000);
+    const modalTimeout = parseInt(import.meta.env.VITE_MODAL_TIMEOUT_MS) || 3000;
+    setTimeout(() => setModal({ show: false, title: '', message: '', type: 'info' }), modalTimeout);
   };
 
   const loadUserLetters = async () => {
@@ -81,9 +82,10 @@ const LettersPanel = ({ user }) => {
   const loadSignedUrlForLetter = async (letterId, filePath) => {
     if (!letterId || !filePath) return;
     try {
+      const expirySeconds = parseInt(import.meta.env.VITE_SIGNED_URL_EXPIRY) || 3600;
       const { data, error } = await supabaseClient.storage
         .from('letters')
-        .createSignedUrl(filePath, 60);
+        .createSignedUrl(filePath, expirySeconds);
 
       if (error) {
         console.error('Signed URL error:', error);
@@ -215,11 +217,12 @@ const LettersPanel = ({ user }) => {
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (max configurable MB)
+    const maxFileSizeMB = parseInt(import.meta.env.VITE_MAX_FILE_SIZE_MB) || 10;
+    if (file.size > maxFileSizeMB * 1024 * 1024) {
       console.log('❌ File too large:', file.size, 'bytes');
-      setSaveStatus('Fichier trop volumineux (max 10MB)');
-      showModal('Fichier trop volumineux', 'Taille maximum: 10MB', 'error');
+      setSaveStatus(`Fichier trop volumineux (max ${maxFileSizeMB}MB)`);
+      showModal('Fichier trop volumineux', `Taille maximum: ${maxFileSizeMB}MB`, 'error');
       setTimeout(() => setSaveStatus(''), 3000);
       return;
     }
@@ -243,7 +246,7 @@ const LettersPanel = ({ user }) => {
 
       const { data: signedData, error: signedUrlError } = await supabaseClient.storage
         .from('letters')
-        .createSignedUrl(filePath, 60);
+        .createSignedUrl(filePath, parseInt(import.meta.env.VITE_SIGNED_URL_EXPIRY) || 3600);
 
       if (signedUrlError) {
         throw signedUrlError;
