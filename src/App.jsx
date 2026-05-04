@@ -119,6 +119,9 @@ function App() {
   const [user, setUser] = useState(null);
   const [status, setStatus] = useState('Non connecté');
   const [openSections, setOpenSections] = useState([]);
+  const [saveStatus, setSaveStatus] = useState('');
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [selectedSection, setSelectedSection] = useState(SECS[0].id);
 
   const total = useMemo(() => Object.keys(state).length, [state]);
   const checked = useMemo(() => Object.values(state).filter(Boolean).length, [state]);
@@ -135,29 +138,14 @@ function App() {
     }
 
     const init = async () => {
-      setStatus('Connexion automatique...');
       const { data } = await supabaseClient.auth.getSession();
-      let currentUser = data.session ? data.session.user : null;
-      if (!currentUser) {
-        // Auto sign in with GitHub
-        const { error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'github',
-          options: {
-            redirectTo: window.location.origin
-          }
-        });
-        if (error) {
-          console.error('GitHub sign in error:', error);
-          setStatus('Erreur de connexion GitHub');
-          return;
-        }
-        // The page will redirect, so no need to set user here
-        return;
-      }
-      setUser(currentUser);
-      setStatus(currentUser ? `Connecté : ${currentUser.email}` : 'Non connecté');
+      const currentUser = data.session ? data.session.user : null;
       if (currentUser) {
+        setUser(currentUser);
+        setStatus(`Connecté : ${currentUser.email}`);
         await loadRemoteState(currentUser);
+      } else {
+        setStatus('Non connecté');
       }
     };
 
@@ -198,13 +186,29 @@ function App() {
   };
 
   const saveRemoteState = async (nextState) => {
-    if (!user) return;
+    if (!user) {
+      setSaveStatus('Non connecté — pas de sauvegarde');
+      setSaveLoading(false);
+      setTimeout(() => setSaveStatus(''), 3000);
+      return;
+    }
+
+    setSaveStatus('Sauvegarde...');
+    setSaveLoading(true);
+
     const { error } = await supabaseClient
       .from('checklist_states')
       .upsert({ user_id: user.id, state: nextState, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
 
     if (error) {
       console.error('Supabase save error:', error);
+      setSaveStatus('Erreur de sauvegarde');
+      setSaveLoading(false);
+      setTimeout(() => setSaveStatus(''), 4000);
+    } else {
+      setSaveStatus('Sauvegardé ✓');
+      setSaveLoading(false);
+      setTimeout(() => setSaveStatus(''), 2000);
     }
   };
 
@@ -223,6 +227,26 @@ function App() {
     saveRemoteState(next);
   };
 
+  const handleLogin = async () => {
+    setStatus('Connexion GitHub...');
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+    if (error) {
+      console.error('GitHub sign in error:', error);
+      setStatus('Erreur de connexion GitHub');
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabaseClient.auth.signOut();
+    setUser(null);
+    setStatus('Déconnecté');
+  };
+
   const toggleSection = (sectionId) => {
     setOpenSections((current) =>
       current.includes(sectionId) ? current.filter((id) => id !== sectionId) : [...current, sectionId]
@@ -233,61 +257,88 @@ function App() {
     setOpenSections(SECS.map((section) => section.id));
   };
 
-  return (
-    <div className="container">
-      <h1 className="page-title">Dossier Visa Étudiant — M2 Besançon</h1>
-      <p className="page-sub">Université Marie et Louis Pasteur · M2 Systèmes Logiciels · Checklist exhaustive avec instructions</p>
-      <div className="rdv-badge">📅 RDV CAPAGO : 8 juin 2025</div>
-      <div className="prog-wrap">
-        <div className="prog-bar" style={{ width: `${percent}%` }} />
+  if (!user) {
+    return (
+      <div className="login-screen">
+        <div className="login-message">
+          <h2>Connectez-vous avec GitHub</h2>
+          <p>Pour sauvegarder votre progression</p>
+          <button className="login-btn" onClick={handleLogin}>Se connecter</button>
+        </div>
       </div>
-      <div className="prog-lbl">{checked} / {total} cochés ({percent}%)</div>
-      <div className="top-actions">
-        <button className="reset-btn" type="button" onClick={handleReset}>↺ Réinitialiser</button>
-        <button className="expand-all" type="button" onClick={openAllSections}>⊞ Tout ouvrir</button>
-        <span className="status-label">{status}</span>
-      </div>
+    );
+  }
 
-      {SECS.map((section) => {
-        const isOpen = openSections.includes(section.id);
-        return (
-          <div className="sec" key={section.id}>
-            <div className="sec-hdr" onClick={() => toggleSection(section.id)}>
-              <div className="sec-ico" style={{ background: section.bg }}>{section.ico}</div>
-              <div className="sec-inf">
-                <div className="sec-name">{section.nm}</div>
-                <div className="sec-cnt">{section.items.filter((item) => state[item.id]).length}/{section.items.length} cochés</div>
-              </div>
-              <span className={`badge ${section.badge.c}`}>{section.badge.t}</span>
-              <span className={`chev${isOpen ? ' open' : ''}`}>▼</span>
-            </div>
-            <div className={`sec-body${isOpen ? ' open' : ''}`}>
-              {section.note && <div className={`note ${section.note.c}`} dangerouslySetInnerHTML={{ __html: section.note.t }} />}
-              {section.chain && <Chain />}
-              {section.items.map((item) => (
-                <div key={item.id} className={`item${state[item.id] ? ' chk' : ''}`} onClick={() => handleToggle(item.id)}>
-                  <div className="cbx">
-                    <svg className="ck-ico" viewBox="0 0 11 9" fill="none">
-                      <path d="M1 4L4.5 7.5L10 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <div className="ibody">
-                    <div className="ititle">{item.t}</div>
-                    <div className="idet">{item.d}</div>
-                    {item.h && (
-                      <div className="ihow">
-                        <div className="ihow-title">📌 Comment obtenir / faire</div>
-                        <div className="ihow-txt" dangerouslySetInnerHTML={{ __html: item.h }} />
-                      </div>
-                    )}
-                    <div className="tags">{item.g.map((tag) => <Tag key={tag} tag={tag} />)}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+  return (
+    <div className="app-layout">
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <h1 className="sidebar-title">Visa Checklist</h1>
+          <div className="prog-wrap">
+            <div className="prog-bar" style={{ width: `${percent}%` }} />
           </div>
-        );
-      })}
+          <div className="prog-lbl">{checked} / {total} ({percent}%)</div>
+        </div>
+        <div className="sidebar-sections">
+          {SECS.map((section) => (
+            <div
+              key={section.id}
+              className={`sidebar-item${selectedSection === section.id ? ' active' : ''}`}
+              onClick={() => setSelectedSection(section.id)}
+            >
+              <div className="sidebar-ico" style={{ background: section.bg }}>{section.ico}</div>
+              <div className="sidebar-info">
+                <div className="sidebar-name">{section.nm}</div>
+                <div className="sidebar-cnt">{section.items.filter((item) => state[item.id]).length}/{section.items.length}</div>
+              </div>
+              <span className={`sidebar-badge ${section.badge.c}`}>{section.badge.t}</span>
+            </div>
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          <button className="logout-btn" onClick={handleLogout}>Déconnexion</button>
+        </div>
+      </div>
+      <div className="main-content">
+        <div className="main-header">
+          <h2 className="main-title">{SECS.find(s => s.id === selectedSection)?.nm}</h2>
+          <span className="status-label">{status}</span>
+          {saveStatus && (
+            <span className={`save-status${saveLoading ? ' loading' : ''}`}>{saveStatus}</span>
+          )}
+        </div>
+        <div className="main-body">
+          {(() => {
+            const section = SECS.find(s => s.id === selectedSection);
+            return (
+              <>
+                {section.note && <div className={`note ${section.note.c}`} dangerouslySetInnerHTML={{ __html: section.note.t }} />}
+                {section.chain && <Chain />}
+                {section.items.map((item) => (
+                  <div key={item.id} className={`item${state[item.id] ? ' chk' : ''}`} onClick={() => handleToggle(item.id)}>
+                    <div className="cbx">
+                      <svg className="ck-ico" viewBox="0 0 11 9" fill="none">
+                        <path d="M1 4L4.5 7.5L10 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <div className="ibody">
+                      <div className="ititle">{item.t}</div>
+                      <div className="idet">{item.d}</div>
+                      {item.h && (
+                        <div className="ihow">
+                          <div className="ihow-title">📌 Comment obtenir / faire</div>
+                          <div className="ihow-txt" dangerouslySetInnerHTML={{ __html: item.h }} />
+                        </div>
+                      )}
+                      <div className="tags">{item.g.map((tag) => <Tag key={tag} tag={tag} />)}</div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            );
+          })()}
+        </div>
+      </div>
     </div>
   );
 }
