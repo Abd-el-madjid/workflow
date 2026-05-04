@@ -17,11 +17,14 @@ CREATE TABLE IF NOT EXISTS user_letters (
   letter_id TEXT NOT NULL, -- 'l1', 'l2', etc.
   title TEXT NOT NULL,
   content TEXT NOT NULL,
-  file_url TEXT, -- For uploaded files
-  file_name TEXT, -- Original file name
+  file_path TEXT, -- Private storage path in Supabase
+  file_name TEXT, -- Original uploaded file name
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id, letter_id)
 );
+
+ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_path TEXT;
+ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_name TEXT;
 
 -- Enable RLS
 ALTER TABLE checklist_states ENABLE ROW LEVEL SECURITY;
@@ -49,8 +52,8 @@ CREATE POLICY "Users can update own letters" ON user_letters
 
 -- Storage bucket for letter uploads
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('letters', 'letters', true)
-ON CONFLICT (id) DO UPDATE SET public = true;
+VALUES ('letters', 'letters', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
 
 -- Storage policies for letters bucket
 CREATE POLICY "Users can upload own letter files" ON storage.objects

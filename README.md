@@ -16,26 +16,40 @@ Checklist interactive complète pour la demande de **visa long séjour étudiant
 
 ## 📋 Sections couvertes
 
-| # | Section | Documents |
-|---|---------|-----------|
-| 1 | Campus France | Message fin de procédure, attestation admission, formulaire France-Visas |
-| 2 | Diplômes & Authentification | Diplômes, bac, relevés de notes, chaîne d'authentification |
-| 3 | Identité & Documents civils | Passeport, photos, acte de naissance, fiche familiale, casier judiciaire |
-| 4 | Ressources financières | Attestation emploi, bulletins salaire, relevés CCP, CV |
-| 5 | Garant France (belle-sœur Paris) | PEC, bulletins, relevés, justif. domicile, lien de parenté |
-| 6 | Garant Algérie (parent retraité) | Attestation PEC, pension CNAS, relevés CCP |
-| 7 | Casier judiciaire & Assurance santé | Bulletin n°3, assurance médicale |
-| 8 | Hébergement | Hôtel Agoda, lettre explicative logement |
-| 9 | CROUS Besançon | Guide complet : DSE, vœux, phase complémentaire 7 juillet |
-| 10 | Lettre explicative | Plan paragraphe par paragraphe |
-| 11 | Après visa — Arrivée France | CVEC, VLS-TS, CPAM, carte de séjour, CAF, compte bancaire |
-| 12 | RDV CAPAGO — Jour J | Convocation, frais, biométrie, organisation dossier |
+| #   | Section                             | Documents                                                                |
+| --- | ----------------------------------- | ------------------------------------------------------------------------ |
+| 1   | Campus France                       | Message fin de procédure, attestation admission, formulaire France-Visas |
+| 2   | Diplômes & Authentification         | Diplômes, bac, relevés de notes, chaîne d'authentification               |
+| 3   | Identité & Documents civils         | Passeport, photos, acte de naissance, fiche familiale, casier judiciaire |
+| 4   | Ressources financières              | Attestation emploi, bulletins salaire, relevés CCP, CV                   |
+| 5   | Garant France (belle-sœur Paris)    | PEC, bulletins, relevés, justif. domicile, lien de parenté               |
+| 6   | Garant Algérie (parent retraité)    | Attestation PEC, pension CNAS, relevés CCP                               |
+| 7   | Casier judiciaire & Assurance santé | Bulletin n°3, assurance médicale                                         |
+| 8   | Hébergement                         | Hôtel Agoda, lettre explicative logement                                 |
+| 9   | CROUS Besançon                      | Guide complet : DSE, vœux, phase complémentaire 7 juillet                |
+| 10  | Lettre explicative                  | Plan paragraphe par paragraphe                                           |
+| 11  | Après visa — Arrivée France         | CVEC, VLS-TS, CPAM, carte de séjour, CAF, compte bancaire                |
+| 12  | RDV CAPAGO — Jour J                 | Convocation, frais, biométrie, organisation dossier                      |
 
 ## 🚀 Utilisation
 
-Ouvrir `index.html` directement dans un navigateur — aucune installation requise.
+### En local
 
-Ou consulter en ligne via GitHub Pages : `https://<username>.github.io/visa-checklist-besancon`
+1. Copier `.env.example` en `.env`
+2. Ajouter vos valeurs Supabase dans `.env`
+3. Installer les dépendances : `npm install`
+4. Lancer le projet : `npm run dev`
+
+### En production
+
+- Ne pas committer `.env` dans le dépôt
+- Configurer `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` dans votre plateforme de déploiement
+- Utiliser HTTPS pour le site et pour les callbacks OAuth
+
+### Déploiement recommandé
+
+- Vite build : `npm run build`
+- Servir le dossier `dist/`
 
 ## 📌 Notes importantes
 

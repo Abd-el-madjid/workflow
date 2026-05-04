@@ -35,7 +35,9 @@ const LettersPanel = ({ user }) => {
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
+  const [modal, setModal] = useState({ show: false, title: '', message: '', type: 'info' }); // success, error, info
   const [uploadedFileName, setUploadedFileName] = useState({}); // Track uploaded file names
+  const [signedUrls, setSignedUrls] = useState({}); // Private preview URLs for private storage files
 
   // Load user letters on mount and when user changes
   useEffect(() => {
@@ -54,7 +56,7 @@ const LettersPanel = ({ user }) => {
     try {
       const { data, error } = await supabaseClient
         .from('user_letters')
-        .select('letter_id, title, content, file_url, file_name')
+        .select('letter_id, title, content, file_path, file_name')
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -70,14 +72,42 @@ const LettersPanel = ({ user }) => {
       setUserLetters(lettersMap);
       setUploadedFileName(fileNamesMap);
       setEditedLetters({}); // Clear any unsaved changes
+      setSignedUrls({});
     } catch (error) {
       console.error('Error loading letters:', error);
     }
   };
 
+  const loadSignedUrlForLetter = async (letterId, filePath) => {
+    if (!letterId || !filePath) return;
+    try {
+      const { data, error } = await supabaseClient.storage
+        .from('letters')
+        .createSignedUrl(filePath, 60);
+
+      if (error) {
+        console.error('Signed URL error:', error);
+        return;
+      }
+
+      setSignedUrls(prev => ({
+        ...prev,
+        [letterId]: data.signedUrl
+      }));
+    } catch (error) {
+      console.error('Signed URL exception:', error);
+    }
+  };
+
+  useEffect(() => {
+    const filePath = editedLetters[activeLetter]?.file_path || userLetters[activeLetter]?.file_path;
+    if (filePath) {
+      loadSignedUrlForLetter(activeLetter, filePath);
+    }
+  }, [activeLetter, userLetters, editedLetters]);
+
   const saveLetter = async (letterId) => {
     if (!user) {
-      console.log('❌ Save failed: No user logged in');
       showModal('Erreur', 'Utilisateur non connecté', 'error');
       return;
     }
@@ -86,25 +116,14 @@ const LettersPanel = ({ user }) => {
     setSaving(true);
     setSaveStatus('Sauvegarde...');
 
-    console.log(`🔄 Starting save for letter ${letterId} at ${new Date().toISOString()}`);
-
     try {
       const edited = editedLetters[letterId];
       if (!edited) {
-        console.log('⚠️ No changes to save');
         setSaveStatus('Aucune modification');
         showModal('Info', 'Aucune modification à sauvegarder', 'info');
         setTimeout(() => setSaveStatus(''), 2000);
         return;
       }
-
-      console.log('📤 Saving to database:', {
-        user_id: user.id,
-        letter_id: letterId,
-        title: edited.title?.substring(0, 50) + '...',
-        content_length: edited.content?.length,
-        has_file: !!edited.file_url
-      });
 
       const { error } = await supabaseClient
         .from('user_letters')
@@ -113,7 +132,7 @@ const LettersPanel = ({ user }) => {
           letter_id: letterId,
           title: edited.title,
           content: edited.content,
-          file_url: edited.file_url || userLetters[letterId]?.file_url,
+          file_path: edited.file_path || userLetters[letterId]?.file_path,
           file_name: edited.file_name || userLetters[letterId]?.file_name,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id,letter_id' });
@@ -135,7 +154,7 @@ const LettersPanel = ({ user }) => {
           [letterId]: {
             title: edited.title,
             content: edited.content,
-            file_url: edited.file_url || prev[letterId]?.file_url,
+            file_path: edited.file_path || prev[letterId]?.file_path,
             file_name: edited.file_name || prev[letterId]?.file_name
           }
         }));
@@ -212,40 +231,43 @@ const LettersPanel = ({ user }) => {
 
     try {
       const fileExt = file.name.split('.').pop().toLowerCase();
-      const fileName = `${user.id}/${activeLetter}_${Date.now()}.${fileExt}`;
-
-      console.log('📤 Uploading to storage:', fileName);
+      const filePath = `${user.id}/${activeLetter}_${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabaseClient.storage
         .from('letters')
-        .upload(fileName, file, { upsert: true });
+        .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
-        console.error('❌ Storage upload error:', uploadError);
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabaseClient.storage
+      const { data: signedData, error: signedUrlError } = await supabaseClient.storage
         .from('letters')
-        .getPublicUrl(fileName);
+        .createSignedUrl(filePath, 60);
 
-      console.log('✅ File uploaded successfully, URL:', publicUrl);
+      if (signedUrlError) {
+        throw signedUrlError;
+      }
 
+      const signedUrl = signedData?.signedUrl;
       const uploadDuration = Date.now() - startTime;
 
-      // Update the edited letters state with the file URL and name
       setEditedLetters(prev => ({
         ...prev,
         [activeLetter]: {
           ...prev[activeLetter],
-          file_url: publicUrl,
+          file_path: filePath,
           file_name: file.name,
           title: prev[activeLetter]?.title || userLetters[activeLetter]?.title || LETTERS.find(l => l.id === activeLetter).title,
           content: prev[activeLetter]?.content || userLetters[activeLetter]?.content || LETTERS.find(l => l.id === activeLetter).content
         }
       }));
 
-      // Update uploaded file name display
+      setSignedUrls(prev => ({
+        ...prev,
+        [activeLetter]: signedUrl
+      }));
+
       setUploadedFileName(prev => ({
         ...prev,
         [activeLetter]: file.name
@@ -255,10 +277,7 @@ const LettersPanel = ({ user }) => {
       showModal('Upload réussi', `Fichier uploadé en ${uploadDuration}ms`, 'success');
       setTimeout(() => setSaveStatus(''), 2500);
 
-      // Clear the file input
       event.target.value = '';
-
-      console.log(`✅ File upload completed in ${uploadDuration}ms`);
 
     } catch (error) {
       const duration = Date.now() - startTime;
@@ -276,7 +295,7 @@ const LettersPanel = ({ user }) => {
       [letterId]: {
         title: template.title,
         content: template.content,
-        file_url: prev[letterId]?.file_url || userLetters[letterId]?.file_url,
+        file_path: prev[letterId]?.file_path || userLetters[letterId]?.file_path,
         file_name: prev[letterId]?.file_name || userLetters[letterId]?.file_name
       }
     }));
@@ -287,6 +306,9 @@ const LettersPanel = ({ user }) => {
   const editedLetter = editedLetters[activeLetter];
   const currentContent = editedLetter?.content || userLetter?.content || letter.content;
   const currentTitle = editedLetter?.title || userLetter?.title || letter.title;
+  const currentFilePath = editedLetter?.file_path || userLetter?.file_path;
+  const currentFileUrl = signedUrls[activeLetter];
+  const currentFileName = uploadedFileName[activeLetter] || editedLetter?.file_name || userLetter?.file_name || 'Fichier';
   const hasUnsavedChanges = !!editedLetter;
 
   const handleCopy = () => {
@@ -372,19 +394,23 @@ const LettersPanel = ({ user }) => {
             placeholder="Contenu de la lettre..."
           />
 
-          {(editedLetter?.file_url || userLetter?.file_url) && (
+          {currentFilePath && (
             <div className="letter-file-preview">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <span>📎 Fichier attaché:</span>
-                <strong>{uploadedFileName[activeLetter] || editedLetter?.file_name || userLetter?.file_name || 'Fichier'}</strong>
-                <a href={editedLetter?.file_url || userLetter?.file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>
-                  Voir le fichier
-                </a>
+                <strong>{currentFileName}</strong>
+                {currentFileUrl ? (
+                  <a href={currentFileUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>
+                    Voir le fichier
+                  </a>
+                ) : (
+                  <span style={{ color: '#6b7280' }}>Chargement du lien...</span>
+                )}
               </div>
-              {(editedLetter?.file_url || userLetter?.file_url) && (uploadedFileName[activeLetter] || editedLetter?.file_name || userLetter?.file_name)?.toLowerCase().endsWith('.pdf') && (
+              {currentFileUrl && currentFileName.toLowerCase().endsWith('.pdf') && (
                 <div className="pdf-preview" style={{ border: '1px solid #e5e7eb', borderRadius: '4px', padding: '8px', backgroundColor: '#f9fafb' }}>
                   <iframe
-                    src={editedLetter?.file_url || userLetter?.file_url}
+                    src={currentFileUrl}
                     width="100%"
                     height="300px"
                     style={{ border: 'none', borderRadius: '4px' }}
