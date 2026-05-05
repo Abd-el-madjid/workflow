@@ -61,7 +61,7 @@ export function RightSidebar({ uploads, history, onClose }: RightSidebarProps) {
 
   return (
     <>
-      <aside className="w-80 bg-gradient-to-br from-slate-50 to-white border-l border-slate-200 flex flex-col shadow-xl hidden lg:flex">
+      <aside className="w-80 bg-gradient-to-br from-slate-50 to-white border-l border-slate-200 flex flex-col min-h-0 shadow-xl hidden lg:flex">
       {/* Header with close button */}
       <div className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-sm flex items-center justify-between px-5">
         <h3 className="font-bold text-slate-900 text-lg">Détails</h3>

@@ -53,7 +53,7 @@ export function MainContent({ section, onChecklistToggle }: MainContentProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="flex-1 flex flex-col min-h-0 bg-white">
       {/* Content Header */}
       <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-4 md:px-8 py-6 md:py-8">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">

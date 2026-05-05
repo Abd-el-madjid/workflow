@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
 import { LoginPage } from "./components/LoginPage";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { useChecklistAuth } from "./hooks/useChecklistAuth";
 
 export default function App() {
-  const { user, loading } = useChecklistAuth();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // Sync login state with user auth state
-  useEffect(() => {
-    if (!loading) {
-      setIsLoggedIn(!!user);
-    }
-  }, [user, loading]);
+  const {
+    user,
+    loading,
+    state,
+    toggle,
+    reset,
+    logout,
+    saveStatus,
+    saveLoading,
+    progress,
+  } = useChecklistAuth();
 
   if (loading) {
     return (
@@ -25,9 +26,20 @@ export default function App() {
     );
   }
 
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+  if (!user) {
+    return <LoginPage onLogin={() => {}} />;
   }
 
-  return <DashboardLayout onLogout={() => setIsLoggedIn(false)} />;
+  return (
+    <DashboardLayout
+      user={user}
+      state={state}
+      progress={progress}
+      saveStatus={saveStatus}
+      saveLoading={saveLoading}
+      onToggle={toggle}
+      onReset={reset}
+      onLogout={logout}
+    />
+  );
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
@@ -19,9 +18,20 @@ import { RightSidebar } from "./RightSidebar";
 import { BEFORE_SECS, AFTER_SECS } from "../../imports/data";
 import { LETTERS } from "../../imports/Letters";
 
+import type { ChecklistState, ChecklistProgress } from "../hooks/useChecklistAuth";
+
+
 interface DashboardLayoutProps {
+  user: any;
+  state: ChecklistState;
+  progress: ChecklistProgress;
+  saveStatus: string;
+  saveLoading: boolean;
+  onToggle: (id: string) => void;
+  onReset: () => void;
   onLogout: () => void;
 }
+
 
 const BADGE_COLORS = {
   "b-amb": "bg-amber-100 text-amber-800 border-amber-300",
@@ -63,15 +73,40 @@ const menuData = [
   }
 ];
 
-export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
+export function DashboardLayout({
+  user,
+  state,
+  progress,
+  saveStatus,
+  saveLoading,
+  onToggle,
+  onReset,
+  onLogout,
+}: DashboardLayoutProps) {
   const [selectedMenu, setSelectedMenu] = useState<string>("avant-visa");
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(["avant-visa"]));
   const [selectedSection, setSelectedSection] = useState<any>(BEFORE_SECS[0]);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
+const status = saveLoading
+  ? "saving"
+  : saveStatus === "unsaved"
+  ? "unsaved"
+  : "saved";
   const currentMenu = menuData.find(m => m.id === selectedMenu);
+
+  const getSectionWithState = (section: any) => {
+    if (!section) return section;
+    return {
+      ...section,
+      items: section.items?.map((item: any) => ({
+        ...item,
+        checked: state[item.id] ?? false,
+      })),
+    };
+  };
+
+  const selectedSectionWithState = getSectionWithState(selectedSection);
 
   const toggleMenu = (menuId: string) => {
     const newExpanded = new Set(expandedMenus);
@@ -83,24 +118,15 @@ export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
     setExpandedMenus(newExpanded);
   };
 
-  const handleChecklistToggle = (itemId: string) => {
-    setSaveStatus("saving");
-    setTimeout(() => setSaveStatus("saved"), 800);
+  const toggleChecklistItem = (itemId: string) => {
+    onToggle(itemId);
   };
 
-  // Calculate overall progress
-  const allProgress = [...BEFORE_SECS, ...AFTER_SECS].reduce((acc, section) => {
-    const sectionCompleted = section.items?.filter((item: any) => item.checked).length || 0;
-    const sectionTotal = section.items?.length || 0;
-    return {
-      completed: acc.completed + sectionCompleted,
-      total: acc.total + sectionTotal
-    };
-  }, { completed: 0, total: 0 });
-
-  const overallProgress = allProgress.total > 0
-    ? (allProgress.completed / allProgress.total) * 100
-    : 0;
+  const overallProgress = progress.percentage;
+  const allProgress = {
+    completed: progress.checked,
+    total: progress.total,
+  };
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -126,29 +152,46 @@ export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
         </div>
         <div className="flex items-center gap-3 md:gap-4">
           <div className="hidden md:flex items-center gap-2 text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
-            <Cloud className={cn(
-              "w-4 h-4 transition-colors",
-              saveStatus === "saved" && "text-emerald-600",
-              saveStatus === "saving" && "text-blue-600 animate-pulse",
-              saveStatus === "unsaved" && "text-orange-600"
-            )} />
+<Cloud className={cn(
+  "w-4 h-4 transition-colors",
+  status === "saved" && "text-emerald-600",
+  status === "saving" && "text-blue-600 animate-pulse",
+  status === "unsaved" && "text-orange-600"
+)} />
             <span className={cn(
               "font-medium transition-colors",
-              saveStatus === "saved" && "text-emerald-700",
-              saveStatus === "saving" && "text-blue-700",
-              saveStatus === "unsaved" && "text-orange-700"
+              status === "saved" && "text-emerald-700",
+              status === "saving" && "text-blue-700",
+              status === "unsaved" && "text-orange-700"
             )}>
-              {saveStatus === "saved" && "Sauvegardé"}
-              {saveStatus === "saving" && "Sauvegarde..."}
-              {saveStatus === "unsaved" && "Non sauvegardé"}
+              {status === "saved" && "Sauvegardé"}
+              {status === "saving" && "Sauvegarde..."}
+              {status === "unsaved" && "Non sauvegardé"}
             </span>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onReset}
+            disabled={saveLoading}
+            className="hidden md:inline-flex h-9 px-3 text-slate-700 border-slate-200 hover:bg-slate-100"
+          >
+            {saveLoading ? "Enregistrement..." : "Réinitialiser"}
+          </Button>
           <Separator orientation="vertical" className="h-6 hidden md:block" />
-          <div className="flex items-center gap-2 bg-gradient-to-r from-slate-100 to-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+          <div className="flex items-center gap-3 bg-gradient-to-r from-slate-100 to-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <User className="w-4 h-4 text-white" />
             </div>
-            <span className="text-sm font-semibold text-slate-700 hidden md:block">Utilisateur</span>
+            <div className="hidden md:flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-slate-700 truncate max-w-[150px]">
+                {user.email || user.user_metadata?.full_name || user.id}
+              </span>
+              <span className="text-xs text-slate-500">Connecté</span>
+            </div>
+            <span className="text-sm font-semibold text-slate-700 md:hidden truncate max-w-[120px]">
+              {user.email ? user.email.split('@')[0] : user.id?.slice(0, 8)}
+            </span>
           </div>
         </div>
       </header>
@@ -167,7 +210,7 @@ export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-300 font-medium">Progression totale</span>
                   <span className="font-bold text-lg bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                    {Math.round(overallProgress)}%
+                    {overallProgress}%
                   </span>
                 </div>
                 <div className="relative">
@@ -220,7 +263,7 @@ export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
                     {expandedMenus.has(menu.id) && (
                       <div className="mt-2 ml-2 space-y-1">
                         {menu.sections.map((section: any) => {
-                          const sectionCompleted = section.items?.filter((i: any) => i.checked).length || 0;
+                          const sectionCompleted = section.items?.filter((i: any) => state[i.id]).length || 0;
                           const sectionTotal = section.items?.length || 0;
 
                           return (
@@ -289,10 +332,10 @@ export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
         )}
 
         {/* Main content area */}
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 flex flex-col min-w-0 min-h-0">
           <MainContent
-            section={selectedSection}
-            onChecklistToggle={handleChecklistToggle}
+            section={selectedSectionWithState}
+            onChecklistToggle={toggleChecklistItem}
           />
         </main>
 

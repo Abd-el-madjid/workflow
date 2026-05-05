@@ -6,9 +6,16 @@ CREATE TABLE IF NOT EXISTS checklist_states (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   state JSONB NOT NULL,
+  checked_count INTEGER NOT NULL DEFAULT 0,
+  total_count INTEGER NOT NULL DEFAULT 0,
+  percentage INTEGER NOT NULL DEFAULT 0,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(user_id)
 );
+
+ALTER TABLE checklist_states ADD COLUMN IF NOT EXISTS checked_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE checklist_states ADD COLUMN IF NOT EXISTS total_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE checklist_states ADD COLUMN IF NOT EXISTS percentage INTEGER NOT NULL DEFAULT 0;
 
 -- Table for user letters
 CREATE TABLE IF NOT EXISTS user_letters (

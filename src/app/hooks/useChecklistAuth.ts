@@ -2,11 +2,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabaseClient } from '../../../supabaseClient';
 import { BEFORE_SECS, AFTER_SECS } from '../../imports/data';
 
-interface ChecklistState {
+export interface ChecklistState {
   [key: string]: boolean;
 }
 
-interface ChecklistProgress {
+export interface ChecklistProgress {
   checked: number;
   total: number;
   percentage: number;
@@ -49,6 +49,16 @@ export function useChecklistAuth(): ChecklistAuthReturn {
   const total = Object.keys(state).length;
   const checked = Object.values(state).filter(Boolean).length;
   const percentage = total ? Math.round((checked / total) * 100) : 0;
+
+  const getProgressFromState = (nextState: ChecklistState): ChecklistProgress => {
+    const nextTotal = Object.keys(nextState).length;
+    const nextChecked = Object.values(nextState).filter(Boolean).length;
+    return {
+      checked: nextChecked,
+      total: nextTotal,
+      percentage: nextTotal ? Math.round((nextChecked / nextTotal) * 100) : 0,
+    };
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -113,7 +123,7 @@ export function useChecklistAuth(): ChecklistAuthReturn {
     try {
       const { data, error } = await supabaseClient
         .from('checklist_states')
-        .select('state')
+        .select('state, checked_count, total_count, percentage')
         .eq('user_id', currentUser.id)
         .single();
 
@@ -143,10 +153,14 @@ export function useChecklistAuth(): ChecklistAuthReturn {
       const startTime = Date.now();
 
       try {
-        const response = await supabaseClient.from('checklist_states').upsert(
+        const progress = getProgressFromState(nextState);
+      const response = await supabaseClient.from('checklist_states').upsert(
           {
             user_id: user.id,
             state: nextState,
+            checked_count: progress.checked,
+            total_count: progress.total,
+            percentage: progress.percentage,
             updated_at: new Date().toISOString()
           },
           { onConflict: 'user_id' }
