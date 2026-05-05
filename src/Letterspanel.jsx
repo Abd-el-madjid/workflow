@@ -38,8 +38,6 @@ const LettersPanel = ({ user }) => {
   const [modal, setModal] = useState({ show: false, title: '', message: '', type: 'info' }); // success, error, info
   const [uploadedFileName, setUploadedFileName] = useState({}); // Track uploaded file names
   const [signedUrls, setSignedUrls] = useState({}); // Private preview URLs for private storage files
-  const [letterHistory, setLetterHistory] = useState({}); // Track letter history
-  const [showHistory, setShowHistory] = useState(false); // Toggle history view
 
   // Load user letters on mount and when user changes
   useEffect(() => {
@@ -57,55 +55,34 @@ const LettersPanel = ({ user }) => {
   const loadUserLetters = async () => {
     if (!user) return;
     try {
+      console.log('🔄 Loading user letters for:', user.id);
       const { data, error } = await supabaseClient
         .from('user_letters')
         .select('letter_id, title, content, file_path, file_name')
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error loading letters:', error);
+        throw error;
+      }
 
+      console.log('✅ Loaded letters:', data);
       const lettersMap = {};
       const fileNamesMap = {};
       data.forEach(letter => {
         lettersMap[letter.letter_id] = letter;
         if (letter.file_name) {
           fileNamesMap[letter.letter_id] = letter.file_name;
+          console.log(`📎 Found file for ${letter.letter_id}:`, letter.file_name);
         }
       });
       setUserLetters(lettersMap);
       setUploadedFileName(fileNamesMap);
       setEditedLetters({}); // Clear any unsaved changes
       setSignedUrls({});
-
-      // Load letter history
-      await loadLetterHistory();
     } catch (error) {
       console.error('Error loading letters:', error);
-    }
-  };
-
-  const loadLetterHistory = async () => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabaseClient
-        .from('letter_history')
-        .select('letter_id, title, content, file_path, file_name, version_number, created_at')
-        .eq('user_id', user.id)
-        .order('letter_id', { ascending: true })
-        .order('version_number', { ascending: false });
-
-      if (error) throw error;
-
-      const historyMap = {};
-      data.forEach(item => {
-        if (!historyMap[item.letter_id]) {
-          historyMap[item.letter_id] = [];
-        }
-        historyMap[item.letter_id].push(item);
-      });
-      setLetterHistory(historyMap);
-    } catch (error) {
-      console.error('Error loading letter history:', error);
+      showModal('Erreur', `Impossible de charger les lettres: ${error.message}`, 'error');
     }
   };
 
@@ -157,29 +134,7 @@ const LettersPanel = ({ user }) => {
         return;
       }
 
-      // First, save current version to history
-      const currentLetter = userLetters[letterId];
-      if (currentLetter) {
-        const currentHistory = letterHistory[letterId] || [];
-        const nextVersion = currentHistory.length > 0 ? Math.max(...currentHistory.map(h => h.version_number)) + 1 : 1;
-
-        const { error: historyError } = await supabaseClient
-          .from('letter_history')
-          .insert({
-            user_id: user.id,
-            letter_id: letterId,
-            title: currentLetter.title,
-            content: currentLetter.content,
-            file_path: currentLetter.file_path,
-            file_name: currentLetter.file_name,
-            version_number: nextVersion
-          });
-
-        if (historyError) {
-          console.error('History save error:', historyError);
-          // Continue with main save even if history fails
-        }
-      }
+      console.log('💾 Saving letter:', letterId, edited);
 
       const { error } = await supabaseClient
         .from('user_letters')
@@ -219,9 +174,6 @@ const LettersPanel = ({ user }) => {
           delete newEdited[letterId];
           return newEdited;
         });
-
-        // Reload history to include the new version
-        await loadLetterHistory();
       }
     } catch (error) {
       const duration = Date.now() - startTime;
@@ -348,87 +300,7 @@ const LettersPanel = ({ user }) => {
     }
   };
 
-  const restoreLetterVersion = async (letterId, historyItem) => {
-    if (!user) {
-      showModal('Erreur', 'Utilisateur non connecté', 'error');
-      return;
-    }
 
-    const confirmRestore = window.confirm(`Êtes-vous sûr de vouloir restaurer la version ${historyItem.version_number} (${new Date(historyItem.created_at).toLocaleString('fr-FR')}) ? Cette action sauvegardera d'abord la version actuelle dans l'historique.`);
-
-    if (!confirmRestore) return;
-
-    setSaving(true);
-    setSaveStatus('Restauration...');
-
-    try {
-      // First, save current version to history
-      const currentLetter = userLetters[letterId];
-      if (currentLetter) {
-        const currentHistory = letterHistory[letterId] || [];
-        const nextVersion = currentHistory.length > 0 ? Math.max(...currentHistory.map(h => h.version_number)) + 1 : 1;
-
-        await supabaseClient
-          .from('letter_history')
-          .insert({
-            user_id: user.id,
-            letter_id: letterId,
-            title: currentLetter.title,
-            content: currentLetter.content,
-            file_path: currentLetter.file_path,
-            file_name: currentLetter.file_name,
-            version_number: nextVersion
-          });
-      }
-
-      // Restore the selected version
-      const { error } = await supabaseClient
-        .from('user_letters')
-        .upsert({
-          user_id: user.id,
-          letter_id: letterId,
-          title: historyItem.title,
-          content: historyItem.content,
-          file_path: historyItem.file_path,
-          file_name: historyItem.file_name,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,letter_id' });
-
-      if (error) throw error;
-
-      // Update local state
-      setUserLetters(prev => ({
-        ...prev,
-        [letterId]: {
-          title: historyItem.title,
-          content: historyItem.content,
-          file_path: historyItem.file_path,
-          file_name: historyItem.file_name
-        }
-      }));
-
-      setEditedLetters(prev => {
-        const newEdited = { ...prev };
-        delete newEdited[letterId];
-        return newEdited;
-      });
-
-      // Reload history
-      await loadLetterHistory();
-
-      setSaveStatus('✓ Restauré');
-      showModal('Succès', `Version ${historyItem.version_number} restaurée`, 'success');
-      setTimeout(() => setSaveStatus(''), 2500);
-
-    } catch (error) {
-      console.error('Error restoring version:', error);
-      setSaveStatus('Erreur ⚠');
-      showModal('Erreur', `Échec de la restauration: ${error.message}`, 'error');
-      setTimeout(() => setSaveStatus(''), 2500);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const letter = LETTERS.find(l => l.id === activeLetter);
   const userLetter = userLetters[activeLetter];
@@ -554,51 +426,6 @@ const LettersPanel = ({ user }) => {
               </div>
             </div>
           )}
-
-          {/* History Section */}
-          <div className="letter-section">
-            <div className="section-header">
-              <h3>📚 Historique des Modifications</h3>
-              <button 
-                className="toggle-history-btn"
-                onClick={() => setShowHistory(!showHistory)}
-              >
-                {showHistory ? '🔽 Masquer' : '🔼 Afficher'} ({letterHistory[activeLetter]?.length || 0} versions)
-              </button>
-            </div>
-            {showHistory && (
-              <div className="section-content">
-                {letterHistory[activeLetter]?.length > 0 ? (
-                  <div className="history-list">
-                    {letterHistory[activeLetter].map((historyItem, index) => (
-                      <div key={historyItem.id} className="history-item">
-                        <div className="history-info">
-                          <span className="history-version">Version {historyItem.version_number}</span>
-                          <span className="history-date">
-                            {new Date(historyItem.created_at).toLocaleString('fr-FR')}
-                          </span>
-                          {historyItem.file_name && (
-                            <span className="history-file">📎 {historyItem.file_name}</span>
-                          )}
-                        </div>
-                        <div className="history-actions">
-                          <button 
-                            className="history-restore-btn"
-                            onClick={() => restoreLetterVersion(activeLetter, historyItem)}
-                            disabled={saving}
-                          >
-                            🔄 Restaurer
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="no-history">Aucune version sauvegardée pour cette lettre.</p>
-                )}
-              </div>
-            )}
-          </div>
 
           <div className="letter-footer-note">
             <strong>Après impression :</strong> signer à la main avec un stylo noir, dater manuellement.
