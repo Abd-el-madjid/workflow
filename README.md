@@ -11,7 +11,9 @@ Checklist interactive complète pour la demande de **visa long séjour étudiant
 - 📂 12 sections accordéon dépliables
 - 📌 Instructions détaillées "Comment obtenir" pour chaque document
 - 🔗 Liens directs vers les plateformes officielles
-- 📱 Responsive (mobile + desktop)
+- � **Gestion avancée des lettres** : Édition, templates, upload PDF, historique des versions
+- 📎 **Documents attachés** : Aperçu PDF intégré, gestion des fichiers
+- �📱 Responsive (mobile + desktop)
 - 💾 Fichier HTML autonome — aucune dépendance
 
 ## 📋 Sections couvertes
@@ -30,6 +32,25 @@ Checklist interactive complète pour la demande de **visa long séjour étudiant
 | 10  | Lettre explicative                  | Plan paragraphe par paragraphe                                           |
 | 11  | Après visa — Arrivée France         | CVEC, VLS-TS, CPAM, carte de séjour, CAF, compte bancaire                |
 | 12  | RDV CAPAGO — Jour J                 | Convocation, frais, biométrie, organisation dossier                      |
+
+## 📝 Gestion des Lettres
+
+### Fonctionnalités avancées :
+
+- **Édition en temps réel** avec aperçu instantané
+- **Templates intégrés** pour démarrer rapidement
+- **Upload de fichiers** : PDF, DOC, DOCX avec aperçu intégré
+- **Historique des versions** : Sauvegarde automatique + restauration
+- **Section Documents** : Visualisation claire des fichiers attachés
+- **Section Historique** : Liste des versions avec dates et possibilité de restaurer
+
+### Organisation de l'interface :
+
+Quand vous sélectionnez une lettre dans la barre latérale :
+
+1. **Zone d'édition** : Titre et contenu modifiable
+2. **Section Document** : Fichier attaché avec lien d'ouverture et aperçu PDF
+3. **Section Historique** : Liste des versions précédentes avec boutons de restauration
 
 ## 🚀 Utilisation
 

@@ -38,6 +38,8 @@ const LettersPanel = ({ user }) => {
   const [modal, setModal] = useState({ show: false, title: '', message: '', type: 'info' }); // success, error, info
   const [uploadedFileName, setUploadedFileName] = useState({}); // Track uploaded file names
   const [signedUrls, setSignedUrls] = useState({}); // Private preview URLs for private storage files
+  const [letterHistory, setLetterHistory] = useState({}); // Track letter history
+  const [showHistory, setShowHistory] = useState(false); // Toggle history view
 
   // Load user letters on mount and when user changes
   useEffect(() => {
@@ -74,8 +76,36 @@ const LettersPanel = ({ user }) => {
       setUploadedFileName(fileNamesMap);
       setEditedLetters({}); // Clear any unsaved changes
       setSignedUrls({});
+
+      // Load letter history
+      await loadLetterHistory();
     } catch (error) {
       console.error('Error loading letters:', error);
+    }
+  };
+
+  const loadLetterHistory = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabaseClient
+        .from('letter_history')
+        .select('letter_id, title, content, file_path, file_name, version_number, created_at')
+        .eq('user_id', user.id)
+        .order('letter_id', { ascending: true })
+        .order('version_number', { ascending: false });
+
+      if (error) throw error;
+
+      const historyMap = {};
+      data.forEach(item => {
+        if (!historyMap[item.letter_id]) {
+          historyMap[item.letter_id] = [];
+        }
+        historyMap[item.letter_id].push(item);
+      });
+      setLetterHistory(historyMap);
+    } catch (error) {
+      console.error('Error loading letter history:', error);
     }
   };
 
@@ -127,6 +157,30 @@ const LettersPanel = ({ user }) => {
         return;
       }
 
+      // First, save current version to history
+      const currentLetter = userLetters[letterId];
+      if (currentLetter) {
+        const currentHistory = letterHistory[letterId] || [];
+        const nextVersion = currentHistory.length > 0 ? Math.max(...currentHistory.map(h => h.version_number)) + 1 : 1;
+
+        const { error: historyError } = await supabaseClient
+          .from('letter_history')
+          .insert({
+            user_id: user.id,
+            letter_id: letterId,
+            title: currentLetter.title,
+            content: currentLetter.content,
+            file_path: currentLetter.file_path,
+            file_name: currentLetter.file_name,
+            version_number: nextVersion
+          });
+
+        if (historyError) {
+          console.error('History save error:', historyError);
+          // Continue with main save even if history fails
+        }
+      }
+
       const { error } = await supabaseClient
         .from('user_letters')
         .upsert({
@@ -165,6 +219,9 @@ const LettersPanel = ({ user }) => {
           delete newEdited[letterId];
           return newEdited;
         });
+
+        // Reload history to include the new version
+        await loadLetterHistory();
       }
     } catch (error) {
       const duration = Date.now() - startTime;
@@ -291,17 +348,86 @@ const LettersPanel = ({ user }) => {
     }
   };
 
-  const loadTemplate = (letterId) => {
-    const template = LETTERS.find(l => l.id === letterId);
-    setEditedLetters(prev => ({
-      ...prev,
-      [letterId]: {
-        title: template.title,
-        content: template.content,
-        file_path: prev[letterId]?.file_path || userLetters[letterId]?.file_path,
-        file_name: prev[letterId]?.file_name || userLetters[letterId]?.file_name
+  const restoreLetterVersion = async (letterId, historyItem) => {
+    if (!user) {
+      showModal('Erreur', 'Utilisateur non connecté', 'error');
+      return;
+    }
+
+    const confirmRestore = window.confirm(`Êtes-vous sûr de vouloir restaurer la version ${historyItem.version_number} (${new Date(historyItem.created_at).toLocaleString('fr-FR')}) ? Cette action sauvegardera d'abord la version actuelle dans l'historique.`);
+
+    if (!confirmRestore) return;
+
+    setSaving(true);
+    setSaveStatus('Restauration...');
+
+    try {
+      // First, save current version to history
+      const currentLetter = userLetters[letterId];
+      if (currentLetter) {
+        const currentHistory = letterHistory[letterId] || [];
+        const nextVersion = currentHistory.length > 0 ? Math.max(...currentHistory.map(h => h.version_number)) + 1 : 1;
+
+        await supabaseClient
+          .from('letter_history')
+          .insert({
+            user_id: user.id,
+            letter_id: letterId,
+            title: currentLetter.title,
+            content: currentLetter.content,
+            file_path: currentLetter.file_path,
+            file_name: currentLetter.file_name,
+            version_number: nextVersion
+          });
       }
-    }));
+
+      // Restore the selected version
+      const { error } = await supabaseClient
+        .from('user_letters')
+        .upsert({
+          user_id: user.id,
+          letter_id: letterId,
+          title: historyItem.title,
+          content: historyItem.content,
+          file_path: historyItem.file_path,
+          file_name: historyItem.file_name,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,letter_id' });
+
+      if (error) throw error;
+
+      // Update local state
+      setUserLetters(prev => ({
+        ...prev,
+        [letterId]: {
+          title: historyItem.title,
+          content: historyItem.content,
+          file_path: historyItem.file_path,
+          file_name: historyItem.file_name
+        }
+      }));
+
+      setEditedLetters(prev => {
+        const newEdited = { ...prev };
+        delete newEdited[letterId];
+        return newEdited;
+      });
+
+      // Reload history
+      await loadLetterHistory();
+
+      setSaveStatus('✓ Restauré');
+      showModal('Succès', `Version ${historyItem.version_number} restaurée`, 'success');
+      setTimeout(() => setSaveStatus(''), 2500);
+
+    } catch (error) {
+      console.error('Error restoring version:', error);
+      setSaveStatus('Erreur ⚠');
+      showModal('Erreur', `Échec de la restauration: ${error.message}`, 'error');
+      setTimeout(() => setSaveStatus(''), 2500);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const letter = LETTERS.find(l => l.id === activeLetter);
@@ -397,32 +523,82 @@ const LettersPanel = ({ user }) => {
             placeholder="Contenu de la lettre..."
           />
 
+          {/* PDF Section */}
           {currentFilePath && (
-            <div className="letter-file-preview">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span>📎 Fichier attaché:</span>
-                <strong>{currentFileName}</strong>
-                {currentFileUrl ? (
-                  <a href={currentFileUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>
-                    Voir le fichier
-                  </a>
-                ) : (
-                  <span style={{ color: '#6b7280' }}>Chargement du lien...</span>
+            <div className="letter-section">
+              <div className="section-header">
+                <h3>📎 Document Attaché</h3>
+              </div>
+              <div className="section-content">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <strong>{currentFileName}</strong>
+                  {currentFileUrl ? (
+                    <a href={currentFileUrl} target="_blank" rel="noopener noreferrer" className="file-link">
+                      🔗 Ouvrir le fichier
+                    </a>
+                  ) : (
+                    <span style={{ color: '#6b7280' }}>Chargement du lien...</span>
+                  )}
+                </div>
+                {currentFileUrl && currentFileName.toLowerCase().endsWith('.pdf') && (
+                  <div className="pdf-preview">
+                    <iframe
+                      src={currentFileUrl}
+                      width="100%"
+                      height="400px"
+                      style={{ border: '1px solid #e5e7eb', borderRadius: '4px' }}
+                      title="PDF Preview"
+                    />
+                  </div>
                 )}
               </div>
-              {currentFileUrl && currentFileName.toLowerCase().endsWith('.pdf') && (
-                <div className="pdf-preview" style={{ border: '1px solid #e5e7eb', borderRadius: '4px', padding: '8px', backgroundColor: '#f9fafb' }}>
-                  <iframe
-                    src={currentFileUrl}
-                    width="100%"
-                    height="300px"
-                    style={{ border: 'none', borderRadius: '4px' }}
-                    title="PDF Preview"
-                  />
-                </div>
-              )}
             </div>
           )}
+
+          {/* History Section */}
+          <div className="letter-section">
+            <div className="section-header">
+              <h3>📚 Historique des Modifications</h3>
+              <button 
+                className="toggle-history-btn"
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                {showHistory ? '🔽 Masquer' : '🔼 Afficher'} ({letterHistory[activeLetter]?.length || 0} versions)
+              </button>
+            </div>
+            {showHistory && (
+              <div className="section-content">
+                {letterHistory[activeLetter]?.length > 0 ? (
+                  <div className="history-list">
+                    {letterHistory[activeLetter].map((historyItem, index) => (
+                      <div key={historyItem.id} className="history-item">
+                        <div className="history-info">
+                          <span className="history-version">Version {historyItem.version_number}</span>
+                          <span className="history-date">
+                            {new Date(historyItem.created_at).toLocaleString('fr-FR')}
+                          </span>
+                          {historyItem.file_name && (
+                            <span className="history-file">📎 {historyItem.file_name}</span>
+                          )}
+                        </div>
+                        <div className="history-actions">
+                          <button 
+                            className="history-restore-btn"
+                            onClick={() => restoreLetterVersion(activeLetter, historyItem)}
+                            disabled={saving}
+                          >
+                            🔄 Restaurer
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-history">Aucune version sauvegardée pour cette lettre.</p>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="letter-footer-note">
             <strong>Après impression :</strong> signer à la main avec un stylo noir, dater manuellement.

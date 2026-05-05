@@ -23,12 +23,27 @@ CREATE TABLE IF NOT EXISTS user_letters (
   UNIQUE(user_id, letter_id)
 );
 
+-- Table for letter history/versions
+CREATE TABLE IF NOT EXISTS letter_history (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  letter_id TEXT NOT NULL, -- 'l1', 'l2', etc.
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  file_path TEXT, -- Private storage path in Supabase
+  file_name TEXT, -- Original uploaded file name
+  version_number INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, letter_id, version_number)
+);
+
 ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_path TEXT;
 ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_name TEXT;
 
 -- Enable RLS
 ALTER TABLE checklist_states ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_letters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE letter_history ENABLE ROW LEVEL SECURITY;
 
 -- Policies for checklist_states
 CREATE POLICY "Users can view own checklist states" ON checklist_states
@@ -49,6 +64,13 @@ CREATE POLICY "Users can insert own letters" ON user_letters
 
 CREATE POLICY "Users can update own letters" ON user_letters
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- Policies for letter_history
+CREATE POLICY "Users can view own letter history" ON letter_history
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own letter history" ON letter_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Storage bucket for letter uploads
 INSERT INTO storage.buckets (id, name, public)
