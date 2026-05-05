@@ -65,8 +65,29 @@ export default function MainContent({
 
       <div className="main-body">
         {/* LETTERS VIEW */}
-        {phase === 'letters' && <LettersPanel user={user} />}
-
+        {phase === 'letters' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', alignItems: 'start' }}>
+            <LettersPanel user={user} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: '100%' }}>
+              <div className="letter-section">
+                <div className="section-header">
+                  <h3>📎 Document Attaché</h3>
+                </div>
+                <div className="section-content" style={{ fontSize: '14px', color: '#6b7280' }}>
+                  Sélectionnez une lettre avec un document attaché pour voir un aperçu ici.
+                </div>
+              </div>
+              <div className="letter-section">
+                <div className="section-header">
+                  <h3>📚 Historique</h3>
+                </div>
+                <div className="section-content" style={{ fontSize: '14px', color: '#6b7280' }}>
+                  Sélectionnez une lettre pour voir l'historique des modifications.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* CHECKLIST VIEW */}
         {phase !== 'letters' && activeSection && (
           <>

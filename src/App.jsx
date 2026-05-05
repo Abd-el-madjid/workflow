@@ -70,13 +70,13 @@ export default function App() {
 
     const init = async () => {
       try {
-        const { data: redirectData, error: redirectError } = await supabaseClient.auth.getSessionFromUrl();
-        if (redirectError && redirectError.message) {
-          console.warn('OAuth redirect parse warning:', redirectError.message);
+        // Get the current session (handles OAuth callback)
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) {
+          console.warn('Session error:', sessionError.message);
         }
-
-        const sessionFromUrl = redirectData?.session;
-        let u = sessionFromUrl?.user ?? null;
+        
+        let u = session?.user ?? null;
 
         if (!u) {
           const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
