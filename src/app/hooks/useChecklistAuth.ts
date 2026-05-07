@@ -72,7 +72,16 @@ export function useChecklistAuth(): ChecklistAuthReturn {
           }
         }
 
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        // Set a 5 second timeout for the session fetch
+        const sessionPromise = supabaseClient.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
+        );
+
+        const { data: { session }, error: sessionError } = await Promise.race([
+          sessionPromise,
+          timeoutPromise as any
+        ]) as any;
 
         if (sessionError) {
           console.warn('Session error:', sessionError);
@@ -83,10 +92,14 @@ export function useChecklistAuth(): ChecklistAuthReturn {
 
         if (currentUser) {
           console.log('✅ User loaded:', currentUser.email);
-          await loadRemoteState(currentUser);
+          // Load remote state without blocking the loading state
+          loadRemoteState(currentUser).catch(err => 
+            console.error('Failed to load remote state:', err)
+          );
         }
       } catch (error) {
         console.error('Init error:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -102,7 +115,9 @@ export function useChecklistAuth(): ChecklistAuthReturn {
         setUser(currentUser);
 
         if (currentUser) {
-          await loadRemoteState(currentUser);
+          loadRemoteState(currentUser).catch(err => 
+            console.error('Failed to load remote state on auth change:', err)
+          );
         } else {
           setState(createInitialState());
           localStorage.removeItem('vsChecklist');
@@ -121,11 +136,21 @@ export function useChecklistAuth(): ChecklistAuthReturn {
     if (!currentUser) return;
 
     try {
-      const { data, error } = await supabaseClient
+      // Set a 3 second timeout for the database query
+      const queryPromise = supabaseClient
         .from('checklist_states')
         .select('state, checked_count, total_count, percentage')
         .eq('user_id', currentUser.id)
         .single();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database query timeout')), 3000)
+      );
+
+      const { data, error } = await Promise.race([
+        queryPromise,
+        timeoutPromise as any
+      ]) as any;
 
       if (error && error.code !== 'PGRST116') {
         console.warn('Error loading checklist:', error.message);
@@ -133,7 +158,15 @@ export function useChecklistAuth(): ChecklistAuthReturn {
       }
 
       if (data?.state) {
-        console.log('✅ Loaded remote state:', Object.keys(data.state).length, 'items');
+        console.log(
+          '✅ Loaded remote state:',
+          Object.keys(data.state).length,
+          'items',
+          data.checked_count,
+          'checked,',
+          data.percentage,
+          '%'
+        );
         setState(data.state);
       }
     } catch (error) {

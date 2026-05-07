@@ -36,21 +36,24 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const redirectUrl = import.meta.env.VITE_OAUTH_REDIRECT_URL || window.location.origin;
       console.log("🔗 GitHub login redirect URL:", redirectUrl);
 
-      const { error } = await supabaseClient.auth.signInWithOAuth({
+      const { data, error } = await supabaseClient.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: redirectUrl
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: false
         }
       });
 
       if (error) {
         console.error("❌ GitHub login error:", error);
         setError(error.message || "Erreur de connexion avec GitHub");
+        setIsLoading(false);
+      } else {
+        console.log("✅ GitHub login initiated, redirecting...");
       }
     } catch (err) {
       console.error("❌ GitHub login exception:", err);
       setError(err instanceof Error ? err.message : "Une erreur est survenue lors de la connexion");
-    } finally {
       setIsLoading(false);
     }
   };
