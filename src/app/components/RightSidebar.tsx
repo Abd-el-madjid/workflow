@@ -37,6 +37,8 @@ interface RightSidebarProps {
   uploads: UploadItem[];
   history: HistoryItem[];
   onClose: () => void;
+  groupId: string;
+  uploadDocument: (file: File, name: string, title: string, groupId: string) => Promise<void>;
 }
 
 const getFileIcon = (type: string) => {
@@ -51,12 +53,17 @@ const getFileColor = (type: string) => {
   return 'text-slate-600';
 };
 
-export function RightSidebar({ uploads, history, onClose }: RightSidebarProps) {
+export function RightSidebar({ uploads, history, onClose, groupId, uploadDocument }: RightSidebarProps) {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
-  const handleUpload = (file: File) => {
-    console.log("Uploading file:", file.name);
-    // Handle file upload logic here
+  const handleUpload = async (file: File, name: string, title: string, groupId: string) => {
+    try {
+      await uploadDocument(file, name, title, groupId);
+      console.log("Document uploaded successfully:", name);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -192,6 +199,7 @@ export function RightSidebar({ uploads, history, onClose }: RightSidebarProps) {
       open={isUploadDialogOpen}
       onOpenChange={setIsUploadDialogOpen}
       onUpload={handleUpload}
+      groupId={groupId}
     />
     </>
   );

@@ -23,6 +23,10 @@ interface ChecklistAuthReturn {
   saveStatus: string;
   saveLoading: boolean;
   progress: ChecklistProgress;
+  uploadDocument: (file: File, name: string, title: string, groupId: string) => Promise<void>;
+  getDocuments: (groupId: string) => Promise<any[]>;
+  saveLetter: (letterId: string, title: string, content: string, pdfFile?: File) => Promise<void>;
+  getLetter: (letterId: string) => Promise<any>;
 }
 
 const ALL_SECS = [...BEFORE_SECS, ...AFTER_SECS];
@@ -237,23 +241,143 @@ export function useChecklistAuth(): ChecklistAuthReturn {
     saveRemote(initial);
   }, [saveRemote]);
 
-  const logout = useCallback(async () => {
-    try {
-      const { error } = await supabaseClient.auth.signOut();
-      if (error) {
-        console.error('❌ Logout error:', error);
-        return;
+  const uploadDocument = useCallback(async (file: File, name: string, title: string, groupId: string) => {
+    if (!user) {
+      throw new Error('No user logged in');
+    }
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${groupId}/${Date.now()}.${fileExt}`;
+
+    // Upload file to storage
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+      .from('documents')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseClient.storage
+      .from('documents')
+      .getPublicUrl(fileName);
+
+    // Save metadata to database
+    const { error: dbError } = await supabaseClient
+      .from('document_uploads')
+      .insert({
+        user_id: user.id,
+        group_id: groupId,
+        name,
+        title,
+        file_url: urlData.publicUrl,
+      });
+
+    if (dbError) {
+      // If database insert fails, try to delete the uploaded file
+      await supabaseClient.storage
+        .from('documents')
+        .remove([fileName]);
+      throw dbError;
+    }
+  }, [user]);
+const logout = useCallback(async () => {
+  try {
+    await supabaseClient.auth.signOut();
+
+    setUser(null);
+    setState(createInitialState());
+
+    localStorage.removeItem('vsChecklist');
+
+    console.log('✅ User logged out');
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+}, []);
+  const getDocuments = useCallback(async (groupId: string) => {
+    if (!user) {
+      return [];
+    }
+
+    const { data, error } = await supabaseClient
+      .from('document_uploads')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('group_id', groupId)
+      .order('uploaded_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching documents:', error);
+      return [];
+    }
+
+    return data || [];
+  }, [user]);
+
+  const saveLetter = useCallback(async (letterId: string, title: string, content: string, pdfFile?: File) => {
+    if (!user) {
+      throw new Error('No user logged in');
+    }
+
+    let filePath = null;
+    let fileName = null;
+
+    if (pdfFile) {
+      // Upload PDF to letters bucket
+      const fileExt = pdfFile.name.split('.').pop();
+      const fileNameUpload = `${user.id}/${letterId}/${Date.now()}.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from('letters')
+        .upload(fileNameUpload, pdfFile);
+
+      if (uploadError) {
+        throw uploadError;
       }
 
-      console.log('✅ Logged out');
-      setUser(null);
-      setState(createInitialState());
-      localStorage.removeItem('vsChecklist');
-      window.location.href = window.location.origin;
-    } catch (error) {
-      console.error('❌ Logout exception:', error);
+      filePath = fileNameUpload;
+      fileName = pdfFile.name;
     }
-  }, []);
+
+    // Save letter data
+    const { error: dbError } = await supabaseClient
+      .from('user_letters')
+      .upsert({
+        user_id: user.id,
+        letter_id: letterId,
+        title,
+        content,
+        file_path: filePath,
+        file_name: fileName,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,letter_id' });
+
+    if (dbError) {
+      throw dbError;
+    }
+  }, [user]);
+
+  const getLetter = useCallback(async (letterId: string) => {
+    if (!user) {
+      return null;
+    }
+
+    const { data, error } = await supabaseClient
+      .from('user_letters')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('letter_id', letterId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching letter:', error);
+      return null;
+    }
+
+    return data;
+  }, [user]);
 
   return {
     user,
@@ -269,6 +393,10 @@ export function useChecklistAuth(): ChecklistAuthReturn {
       checked,
       total,
       percentage
-    }
+    },
+    uploadDocument,
+    getDocuments,
+    saveLetter,
+    getLetter
   };
 }

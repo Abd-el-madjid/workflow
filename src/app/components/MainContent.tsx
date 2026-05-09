@@ -4,13 +4,18 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { AlertCircle, Calendar, CheckCircle2, Clock, Upload as UploadIcon, ChevronRight } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle2, Clock, Upload as UploadIcon, ChevronRight, FileText, X, Download } from "lucide-react";
 import { cn } from "./ui/utils";
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
+import { supabaseClient } from "../../../supabaseClient";
+import { BEFORE_SECS, AFTER_SECS } from "../../imports/data";
+import { useChecklistAuth } from "../hooks/useChecklistAuth";
 interface MainContentProps {
   section: any;
   onChecklistToggle: (itemId: string) => void;
+  getDocuments: (groupId: string) => Promise<any[]>;
+  saveLetter: (letterId: string, title: string, content: string, pdfFile?: File) => Promise<void>;
+  getLetter: (letterId: string) => Promise<any>;
 }
 
 const BADGE_COLORS = {
@@ -36,11 +41,48 @@ const TAG_STYLES = {
   "inf": { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300", label: "Info", icon: AlertCircle },
 };
 
-export function MainContent({ section, onChecklistToggle }: MainContentProps) {
+export function MainContent({ section, onChecklistToggle, getDocuments, saveLetter, getLetter }: MainContentProps) {
+  
   const [letterContent, setLetterContent] = useState(section.content || "");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [showDocuments, setShowDocuments] = useState(false);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [isLatexMode, setIsLatexMode] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [letterTitle, setLetterTitle] = useState(section.nm);
+  const [compiledPdfUrl, setCompiledPdfUrl] = useState<string | null>(null);
+  const [letterPdfFile, setLetterPdfFile] = useState<File | null>(null);
+
+  const { state } = useChecklistAuth();
 
   const isLetter = section.isLetter || section.content;
+
+  useEffect(() => {
+    if (isLetter) {
+      const loadLetter = async () => {
+        try {
+          const letterData = await getLetter(section.id);
+          if (letterData) {
+            setLetterTitle(letterData.title);
+            setLetterContent(letterData.content);
+            if (letterData.file_path) {
+              // Get the public URL for the PDF
+              const { data } = supabaseClient.storage
+                .from('letters')
+                .getPublicUrl(letterData.file_path);
+              setCompiledPdfUrl(data.publicUrl);
+            }
+          }
+        } catch (error) {
+          console.error("Error loading letter:", error);
+        }
+      };
+      loadLetter();
+    }
+  }, [isLetter, section.id, getLetter]);
 
   const toggleItemExpanded = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -50,6 +92,112 @@ export function MainContent({ section, onChecklistToggle }: MainContentProps) {
       newExpanded.add(itemId);
     }
     setExpandedItems(newExpanded);
+  };
+
+  const loadDocuments = async () => {
+    if (showDocuments) {
+      setShowDocuments(false);
+      return;
+    }
+
+    setLoadingDocuments(true);
+    try {
+      const docs = await getDocuments(section.id);
+      setDocuments(docs);
+      setShowDocuments(true);
+    } catch (error) {
+      console.error("Failed to load documents:", error);
+    } finally {
+      setLoadingDocuments(false);
+    }
+  };
+
+  const compileLatex = async () => {
+    if (!letterContent.trim()) return;
+
+    setIsCompiling(true);
+    try {
+      // Create a proper LaTeX document
+      const latexDocument = `\\documentclass[12pt,a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage[french]{babel}
+\\usepackage{geometry}
+\\geometry{margin=2.5cm}
+\\usepackage{amsmath}
+\\usepackage{amsfonts}
+\\usepackage{amssymb}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+\\usepackage{fancyhdr}
+\\pagestyle{fancy}
+
+\\begin{document}
+
+${letterContent}
+
+\\end{document}`;
+
+      // For demo purposes, we'll use a LaTeX compilation service
+      // You can use services like:
+      // - LaTeX.js (client-side)
+      // - Overleaf API
+      // - Custom backend service
+      // - Or services like latexonline.cc
+
+      // For now, let's use latexonline.cc as an example
+      const response = await fetch('https://latexonline.cc/compile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          text: latexDocument,
+          command: 'pdflatex',
+        }),
+      });
+
+      if (response.ok) {
+        const pdfBlob = await response.blob();
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setCompiledPdfUrl(pdfUrl);
+      } else {
+        throw new Error('LaTeX compilation failed');
+      }
+    } catch (error) {
+      console.error("LaTeX compilation failed:", error);
+      // Fallback: show the LaTeX source as a downloadable text file
+      const blob = new Blob([letterContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      setCompiledPdfUrl(url);
+      alert("LaTeX compilation non disponible. Téléchargez le fichier source LaTeX à la place.");
+    } finally {
+      setIsCompiling(false);
+    }
+  };
+
+  const handleSaveLetter = async () => {
+    if (!letterContent.trim()) return;
+
+    setIsSaving(true);
+    try {
+      let pdfFile: File | undefined;
+
+      // If we have a compiled PDF, create a file from it
+      if (compiledPdfUrl && isLatexMode) {
+        const response = await fetch(compiledPdfUrl);
+        const blob = await response.blob();
+        pdfFile = new File([blob], `${letterTitle}.pdf`, { type: 'application/pdf' });
+      }
+
+      await saveLetter(section.id, letterTitle, letterContent, pdfFile);
+      alert("Lettre sauvegardée avec succès!");
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde:", error);
+      alert("Erreur lors de la sauvegarde de la lettre.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -128,41 +276,279 @@ export function MainContent({ section, onChecklistToggle }: MainContentProps) {
                 <div className="flex-1">
                   <h3 className="font-semibold text-blue-900 mb-1">Modèle de lettre</h3>
                   <p className="text-sm text-blue-700 leading-relaxed">
-                    Modifiez ce modèle directement dans l'éditeur ci-dessous. Vos modifications seront automatiquement sauvegardées.
+                    Modifiez ce modèle directement dans l'éditeur ci-dessous. Choisissez entre le mode texte simple ou LaTeX pour une mise en forme professionnelle.
                   </p>
                 </div>
               </div>
 
+              {/* Mode Toggle */}
+              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-sm font-medium text-slate-700">Mode d'édition :</span>
+                <div className="flex rounded-lg bg-white border border-slate-200 p-1">
+                  <button
+                    onClick={() => setIsLatexMode(false)}
+                    className={cn(
+                      "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                      !isLatexMode
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    Texte
+                  </button>
+                  <button
+                    onClick={() => setIsLatexMode(true)}
+                    className={cn(
+                      "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                      isLatexMode
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    )}
+                  >
+                    LaTeX
+                  </button>
+                </div>
+                {isLatexMode && (
+                  <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                    Utilisez la syntaxe LaTeX pour une mise en forme professionnelle
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="letter-title" className="text-base font-semibold text-slate-800">
+                  Titre de la lettre
+                </Label>
+                <input
+                  id="letter-title"
+                  type="text"
+                  value={letterTitle}
+                  onChange={(e) => setLetterTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Titre de votre lettre"
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="letter-content" className="text-base font-semibold text-slate-800">
-                  Contenu de la lettre
+                  Contenu de la lettre {isLatexMode && "(LaTeX)"}
                 </Label>
                 <Textarea
                   id="letter-content"
                   value={letterContent}
                   onChange={(e) => setLetterContent(e.target.value)}
-                  className="min-h-[600px] font-mono text-sm leading-relaxed border-2 focus:border-blue-400 rounded-xl"
-                  placeholder="Tapez votre lettre ici..."
+                  className={cn(
+                    "min-h-[600px] text-sm leading-relaxed border-2 focus:border-blue-400 rounded-xl",
+                    isLatexMode ? "font-mono" : "font-sans"
+                  )}
+                  placeholder={
+                    isLatexMode
+                      ? "\\documentclass{article}\n\\begin{document}\nVotre lettre en LaTeX ici...\n\\end{document}"
+                      : "Tapez votre lettre ici..."
+                  }
                 />
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md">
-                  Sauvegarder
+                <Button
+                  onClick={handleSaveLetter}
+                  disabled={isSaving || !letterContent.trim()}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md"
+                >
+                  {isSaving ? "Sauvegarde..." : "Sauvegarder"}
                 </Button>
-                <Button variant="outline" className="border-2 hover:bg-slate-50">
-                  Exporter en PDF
-                </Button>
+
+                {isLatexMode ? (
+                  <Button
+                    onClick={compileLatex}
+                    disabled={isCompiling || !letterContent.trim()}
+                    variant="outline"
+                    className="border-2 hover:bg-slate-50"
+                  >
+                    {isCompiling ? "Compilation..." : "Compiler LaTeX → PDF"}
+                  </Button>
+                ) : (
+                  <Button variant="outline" className="border-2 hover:bg-slate-50">
+                    Exporter en PDF
+                  </Button>
+                )}
+
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    className="border-2 hover:bg-slate-50"
+                    onClick={() => document.getElementById('letter-pdf-upload')?.click()}
+                  >
+                    <UploadIcon className="w-4 h-4 mr-2" />
+                    Télécharger PDF existant
+                  </Button>
+                  <input
+                    id="letter-pdf-upload"
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setLetterPdfFile(file);
+                        const url = URL.createObjectURL(file);
+                        setCompiledPdfUrl(url);
+                      }
+                    }}
+                  />
+                </div>
+
                 <Button variant="outline" className="border-2 hover:bg-slate-50">
                   Réinitialiser
                 </Button>
               </div>
+
+              {/* PDF Preview */}
+              {compiledPdfUrl && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                      <FileText className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-green-900">
+                        {isLatexMode ? "PDF généré avec succès" : "PDF chargé"}
+                      </h4>
+                      <p className="text-sm text-green-700">
+                        {isLatexMode
+                          ? "Votre lettre LaTeX a été compilée en PDF"
+                          : "Votre PDF a été chargé avec succès"
+                        }
+                      </p>
+                      {letterPdfFile && (
+                        <p className="text-xs text-green-600 mt-1">
+                          Fichier : {letterPdfFile.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      asChild
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <a
+                        href={compiledPdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={
+                          isLatexMode
+                            ? `${section.title || 'letter'}.pdf`
+                            : letterPdfFile?.name || 'letter.pdf'
+                        }
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Télécharger PDF
+                      </a>
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setCompiledPdfUrl(null);
+                        setLetterPdfFile(null);
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Fermer
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             // Regular checklist view
             <>
-              {/* Checklist Section */}
-              {section.items && section.items.length > 0 && (
+              {/* Résumé - Simple list view */}
+              {section.id === "resume" && section.items && section.items.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                    <p className="text-sm text-blue-800">
+                      ✓ Cochez les documents à mesure que vous les préparez. Les items seront marqués dans le résumé au fur et à mesure.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {section.items.map((item: any) => {
+                      // Find if the linked item is checked in the main state
+                      const linkedItemId = item.linkedTo;
+                      let isChecked = false;
+                      let linkedSectionId = "";
+
+                      if (linkedItemId) {
+                        // Search through all sections to find which section contains this item
+                        const allSections = [...BEFORE_SECS, ...AFTER_SECS];
+                        for (const otherSection of allSections) {
+                          if (otherSection.items) {
+                            const found = otherSection.items.find((i: any) => i.id === linkedItemId);
+                            if (found) {
+                              linkedSectionId = otherSection.id;
+                              // Check the state to see if this item is checked
+                              isChecked = state[linkedSectionId]?.[linkedItemId] || false;
+                              break;
+                            }
+                          }
+                        }
+                      }
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg border-2 transition-all",
+                            isChecked
+                              ? "bg-emerald-50 border-emerald-300"
+                              : "bg-white border-slate-200 hover:border-slate-300"
+                          )}
+                        >
+                          <Checkbox
+                            id={item.id}
+                            checked={isChecked}
+                            onCheckedChange={() => {
+                              if (linkedItemId) {
+                                onChecklistToggle(linkedItemId);
+                              }
+                            }}
+                            className="w-4 h-4 border-2"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <label
+                              htmlFor={item.id}
+                              className={cn(
+                                "text-sm font-medium cursor-pointer transition-colors",
+                                isChecked
+                                  ? "text-emerald-800 line-through"
+                                  : "text-slate-900"
+                              )}
+                            >
+                              {item.t}
+                            </label>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              {item.d}
+                            </p>
+                          </div>
+                          {item.g?.includes("req") && (
+                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-semibold flex-shrink-0">
+                              Obligatoire
+                            </span>
+                          )}
+                          {item.g?.includes("opt") && !item.g?.includes("req") && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-semibold flex-shrink-0">
+                              Optionnel
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : section.items && section.items.length > 0 ? (
+                /* Normal expanded checklist items */
                 <div className="space-y-4">
                   <h3 className="font-bold text-xl text-slate-800 flex items-center justify-between">
                     <span className="flex items-center gap-2">
@@ -276,6 +662,62 @@ export function MainContent({ section, onChecklistToggle }: MainContentProps) {
                     })}
                   </div>
                 </div>
+              ) : null}
+
+              {/* Documents Section */}
+              {!isLetter && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+                      <span className="w-1 h-6 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full" />
+                      Documents
+                    </h3>
+                    <Button
+                      onClick={loadDocuments}
+                      variant="outline"
+                      className="border-2 hover:bg-slate-50"
+                      disabled={loadingDocuments}
+                    >
+                      {loadingDocuments ? "Chargement..." : showDocuments ? "Masquer" : "Voir les documents"}
+                    </Button>
+                  </div>
+
+                  {showDocuments && (
+                    <div className="space-y-3">
+                      {documents.length > 0 ? (
+                        documents.map((doc) => (
+                          <div
+                            key={doc.id}
+                            className="bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+                            onClick={() => setSelectedDocument(doc)}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-slate-900 truncate">{doc.title}</h4>
+                                <p className="text-sm text-slate-600 truncate">{doc.name}</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  Uploadé le {new Date(doc.uploaded_at).toLocaleDateString('fr-FR')}
+                                </p>
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-slate-400 mt-1" />
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="bg-gradient-to-br from-slate-50 to-white border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
+                            <FileText className="w-6 h-6 text-slate-400" />
+                          </div>
+                          <p className="text-sm text-slate-600 font-medium">Aucun document</p>
+                          <p className="text-xs text-slate-400 mt-1">Les documents uploadés apparaîtront ici</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
 
               {(!section.items || section.items.length === 0) && !section.expls && (
@@ -290,6 +732,55 @@ export function MainContent({ section, onChecklistToggle }: MainContentProps) {
           )}
         </div>
       </ScrollArea>
+
+      {/* Document Viewer Dialog */}
+      {selectedDocument && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200">
+              <div>
+                <h3 className="font-semibold text-slate-900">{selectedDocument.title}</h3>
+                <p className="text-sm text-slate-600">{selectedDocument.name}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedDocument(null)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex-1 p-4">
+              <iframe
+                src={selectedDocument.file_url}
+                className="w-full h-full min-h-[500px] border rounded-lg"
+                title={selectedDocument.title}
+              />
+            </div>
+            <div className="flex items-center justify-between p-4 border-t border-slate-200">
+              <p className="text-xs text-slate-500">
+                Uploadé le {new Date(selectedDocument.uploaded_at).toLocaleDateString('fr-FR')}
+              </p>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+              >
+                <a
+                  href={selectedDocument.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-3 h-3" />
+                  Télécharger
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

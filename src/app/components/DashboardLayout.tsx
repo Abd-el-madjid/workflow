@@ -30,6 +30,10 @@ interface DashboardLayoutProps {
   onToggle: (id: string) => void;
   onReset: () => void;
   onLogout: () => void;
+  uploadDocument: (file: File, name: string, title: string, groupId: string) => Promise<void>;
+  getDocuments: (groupId: string) => Promise<any[]>;
+  saveLetter: (letterId: string, title: string, content: string, pdfFile?: File) => Promise<void>;
+  getLetter: (letterId: string) => Promise<any>;
 }
 
 
@@ -82,6 +86,10 @@ export function DashboardLayout({
   onToggle,
   onReset,
   onLogout,
+  uploadDocument,
+  getDocuments,
+  saveLetter,
+  getLetter,
 }: DashboardLayoutProps) {
   const [selectedMenu, setSelectedMenu] = useState<string>("avant-visa");
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(["avant-visa"]));
@@ -336,6 +344,9 @@ const status = saveLoading
           <MainContent
             section={selectedSectionWithState}
             onChecklistToggle={toggleChecklistItem}
+            getDocuments={getDocuments}
+            saveLetter={saveLetter}
+            getLetter={getLetter}
           />
         </main>
 
@@ -345,6 +356,8 @@ const status = saveLoading
             uploads={selectedSection.uploads || []}
             history={selectedSection.history || []}
             onClose={() => setIsRightSidebarOpen(false)}
+            groupId={selectedSection.id}
+            uploadDocument={uploadDocument}
           />
         )}
 

@@ -44,6 +44,17 @@ CREATE TABLE IF NOT EXISTS letter_history (
   UNIQUE(user_id, letter_id, version_number)
 );
 
+-- Table for document uploads
+CREATE TABLE IF NOT EXISTS document_uploads (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  group_id TEXT NOT NULL, -- Section id like 'cf', 'dip', etc.
+  name TEXT NOT NULL, -- Document name
+  title TEXT NOT NULL, -- Document title
+  file_url TEXT NOT NULL, -- Public URL to the uploaded file
+  uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_path TEXT;
 ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_name TEXT;
 
@@ -51,6 +62,7 @@ ALTER TABLE user_letters ADD COLUMN IF NOT EXISTS file_name TEXT;
 ALTER TABLE checklist_states ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_letters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE letter_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE document_uploads ENABLE ROW LEVEL SECURITY;
 
 -- Policies for checklist_states
 CREATE POLICY "Users can view own checklist states" ON checklist_states
@@ -79,10 +91,28 @@ CREATE POLICY "Users can view own letter history" ON letter_history
 CREATE POLICY "Users can insert own letter history" ON letter_history
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- Policies for document_uploads
+CREATE POLICY "Users can view own document uploads" ON document_uploads
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own document uploads" ON document_uploads
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own document uploads" ON document_uploads
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own document uploads" ON document_uploads
+  FOR DELETE USING (auth.uid() = user_id);
+
 -- Storage bucket for letter uploads
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('letters', 'letters', false)
 ON CONFLICT (id) DO UPDATE SET public = false;
+
+-- Storage bucket for document uploads
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('documents', 'documents', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
 
 -- Storage policies for letters bucket
 CREATE POLICY "Users can upload own letter files" ON storage.objects
@@ -96,3 +126,16 @@ CREATE POLICY "Users can view own letter files" ON storage.objects
 
 CREATE POLICY "Users can delete own letter files" ON storage.objects
   FOR DELETE USING (bucket_id = 'letters' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
+
+-- Storage policies for documents bucket
+CREATE POLICY "Users can upload own document files" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
+
+CREATE POLICY "Users can update own document files" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
+
+CREATE POLICY "Users can view own document files" ON storage.objects
+  FOR SELECT USING (bucket_id = 'documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
+
+CREATE POLICY "Users can delete own document files" ON storage.objects
+  FOR DELETE USING (bucket_id = 'documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);

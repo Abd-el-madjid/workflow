@@ -13,6 +13,10 @@ export default function App() {
     saveStatus,
     saveLoading,
     progress,
+    uploadDocument,
+    getDocuments,
+    saveLetter,
+    getLetter,
   } = useChecklistAuth();
 
   if (loading) {
@@ -40,6 +44,10 @@ export default function App() {
       onToggle={toggle}
       onReset={reset}
       onLogout={logout}
+      uploadDocument={uploadDocument}
+      getDocuments={getDocuments}
+      saveLetter={saveLetter}
+      getLetter={getLetter}
     />
   );
 }
