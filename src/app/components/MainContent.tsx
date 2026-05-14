@@ -9,9 +9,10 @@ import { cn } from "./ui/utils";
 import { useState, useEffect } from "react";
 import { supabaseClient } from "../../../supabaseClient";
 import { BEFORE_SECS, AFTER_SECS } from "../../imports/data";
-import { useChecklistAuth } from "../hooks/useChecklistAuth";
+import type { ChecklistState } from "../hooks/useChecklistAuth";
 interface MainContentProps {
   section: any;
+  state: ChecklistState;
   onChecklistToggle: (itemId: string) => void;
   getDocuments: (groupId: string) => Promise<any[]>;
   saveLetter: (letterId: string, title: string, content: string, pdfFile?: File) => Promise<void>;
@@ -41,22 +42,16 @@ const TAG_STYLES = {
   "inf": { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300", label: "Info", icon: AlertCircle },
 };
 
-export function MainContent({ section, onChecklistToggle, getDocuments, saveLetter, getLetter }: MainContentProps) {
+export function MainContent({ section, state, onChecklistToggle, getDocuments, saveLetter, getLetter }: MainContentProps) {
   
   const [letterContent, setLetterContent] = useState(section.content || "");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [showDocuments, setShowDocuments] = useState(false);
-  const [loadingDocuments, setLoadingDocuments] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<any>(null);
   const [isLatexMode, setIsLatexMode] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [letterTitle, setLetterTitle] = useState(section.nm);
   const [compiledPdfUrl, setCompiledPdfUrl] = useState<string | null>(null);
   const [letterPdfFile, setLetterPdfFile] = useState<File | null>(null);
-
-  const { state } = useChecklistAuth();
 
   const isLetter = section.isLetter || section.content;
 
@@ -92,24 +87,6 @@ export function MainContent({ section, onChecklistToggle, getDocuments, saveLett
       newExpanded.add(itemId);
     }
     setExpandedItems(newExpanded);
-  };
-
-  const loadDocuments = async () => {
-    if (showDocuments) {
-      setShowDocuments(false);
-      return;
-    }
-
-    setLoadingDocuments(true);
-    try {
-      const docs = await getDocuments(section.id);
-      setDocuments(docs);
-      setShowDocuments(true);
-    } catch (error) {
-      console.error("Failed to load documents:", error);
-    } finally {
-      setLoadingDocuments(false);
-    }
   };
 
   const compileLatex = async () => {
@@ -488,12 +465,13 @@ ${letterContent}
                             const found = otherSection.items.find((i: any) => i.id === linkedItemId);
                             if (found) {
                               linkedSectionId = otherSection.id;
-                              // Check the state to see if this item is checked
-                              isChecked = state[linkedSectionId]?.[linkedItemId] || false;
+                              isChecked = state[linkedItemId] || false;
                               break;
                             }
                           }
                         }
+                      } else {
+                        isChecked = state[item.id] || false;
                       }
 
                       return (
@@ -512,6 +490,8 @@ ${letterContent}
                             onCheckedChange={() => {
                               if (linkedItemId) {
                                 onChecklistToggle(linkedItemId);
+                              } else {
+                                onChecklistToggle(item.id);
                               }
                             }}
                             className="w-4 h-4 border-2"
@@ -528,6 +508,11 @@ ${letterContent}
                             >
                               {item.t}
                             </label>
+                            {linkedSectionId && isChecked && (
+                              <p className="text-xs text-emerald-700 mt-1">
+                                Fait dans une autre section.
+                              </p>
+                            )}
                             <p className="text-xs text-slate-500 mt-0.5">
                               {item.d}
                             </p>
@@ -664,62 +649,6 @@ ${letterContent}
                 </div>
               ) : null}
 
-              {/* Documents Section */}
-              {!isLetter && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
-                      <span className="w-1 h-6 bg-gradient-to-b from-purple-600 to-pink-600 rounded-full" />
-                      Documents
-                    </h3>
-                    <Button
-                      onClick={loadDocuments}
-                      variant="outline"
-                      className="border-2 hover:bg-slate-50"
-                      disabled={loadingDocuments}
-                    >
-                      {loadingDocuments ? "Chargement..." : showDocuments ? "Masquer" : "Voir les documents"}
-                    </Button>
-                  </div>
-
-                  {showDocuments && (
-                    <div className="space-y-3">
-                      {documents.length > 0 ? (
-                        documents.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer"
-                            onClick={() => setSelectedDocument(doc)}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                                <FileText className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-slate-900 truncate">{doc.title}</h4>
-                                <p className="text-sm text-slate-600 truncate">{doc.name}</p>
-                                <p className="text-xs text-slate-500 mt-1">
-                                  Uploadé le {new Date(doc.uploaded_at).toLocaleDateString('fr-FR')}
-                                </p>
-                              </div>
-                              <ChevronRight className="w-5 h-5 text-slate-400 mt-1" />
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="bg-gradient-to-br from-slate-50 to-white border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
-                          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-100 flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-slate-400" />
-                          </div>
-                          <p className="text-sm text-slate-600 font-medium">Aucun document</p>
-                          <p className="text-xs text-slate-400 mt-1">Les documents uploadés apparaîtront ici</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
               {(!section.items || section.items.length === 0) && !section.expls && (
                 <div className="text-center py-16 px-4">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
@@ -732,55 +661,6 @@ ${letterContent}
           )}
         </div>
       </ScrollArea>
-
-      {/* Document Viewer Dialog */}
-      {selectedDocument && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200">
-              <div>
-                <h3 className="font-semibold text-slate-900">{selectedDocument.title}</h3>
-                <p className="text-sm text-slate-600">{selectedDocument.name}</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedDocument(null)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="flex-1 p-4">
-              <iframe
-                src={selectedDocument.file_url}
-                className="w-full h-full min-h-[500px] border rounded-lg"
-                title={selectedDocument.title}
-              />
-            </div>
-            <div className="flex items-center justify-between p-4 border-t border-slate-200">
-              <p className="text-xs text-slate-500">
-                Uploadé le {new Date(selectedDocument.uploaded_at).toLocaleDateString('fr-FR')}
-              </p>
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-              >
-                <a
-                  href={selectedDocument.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="w-3 h-3" />
-                  Télécharger
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

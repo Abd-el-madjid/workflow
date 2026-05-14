@@ -10,11 +10,13 @@ import {
   ChevronRight,
   ChevronDown,
   PanelRightClose,
-  Menu
+  Menu,
+  FileText
 } from "lucide-react";
 import { cn } from "./ui/utils";
 import { MainContent } from "./MainContent";
 import { RightSidebar } from "./RightSidebar";
+import { DocumentsSidebar } from "./DocumentsSidebar";
 import { BEFORE_SECS, AFTER_SECS } from "../../imports/data";
 import { LETTERS } from "../../imports/Letters";
 
@@ -94,13 +96,15 @@ export function DashboardLayout({
   const [selectedMenu, setSelectedMenu] = useState<string>("avant-visa");
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(["avant-visa"]));
   const [selectedSection, setSelectedSection] = useState<any>(BEFORE_SECS[0]);
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [isDocumentsSidebarOpen, setIsDocumentsSidebarOpen] = useState(false);
+  const [isDocumentsPinned, setIsDocumentsPinned] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-const status = saveLoading
-  ? "saving"
-  : saveStatus === "unsaved"
-  ? "unsaved"
-  : "saved";
+  const status = saveLoading
+    ? "saving"
+    : saveStatus === "unsaved"
+    ? "unsaved"
+    : "saved";
   const currentMenu = menuData.find(m => m.id === selectedMenu);
 
   const getSectionWithState = (section: any) => {
@@ -128,6 +132,25 @@ const status = saveLoading
 
   const toggleChecklistItem = (itemId: string) => {
     onToggle(itemId);
+  };
+
+  const openDocumentsSidebar = () => {
+    setIsDocumentsSidebarOpen(true);
+  };
+
+  const toggleDocumentsSidebar = () => {
+    setIsDocumentsSidebarOpen((prev) => {
+      const next = !prev;
+      if (!next && isDocumentsPinned) {
+        setIsDocumentsPinned(false);
+      }
+      return next;
+    });
+  };
+
+  const toggleDocumentsPin = () => {
+    setIsDocumentsPinned((prev) => !prev);
+    setIsDocumentsSidebarOpen(true);
   };
 
   const overallProgress = progress.percentage;
@@ -280,6 +303,9 @@ const status = saveLoading
                               onClick={() => {
                                 setSelectedSection(section);
                                 setIsMobileSidebarOpen(false);
+                                if (!isDocumentsPinned) {
+                                  setIsDocumentsSidebarOpen(false);
+                                }
                               }}
                               className={cn(
                                 "w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-150 group",
@@ -343,6 +369,7 @@ const status = saveLoading
         <main className="flex-1 flex flex-col min-w-0 min-h-0">
           <MainContent
             section={selectedSectionWithState}
+            state={state}
             onChecklistToggle={toggleChecklistItem}
             getDocuments={getDocuments}
             saveLetter={saveLetter}
@@ -350,14 +377,33 @@ const status = saveLoading
           />
         </main>
 
-        {/* Right sidebar */}
+        {/* Details sidebar */}
         {isRightSidebarOpen && (
           <RightSidebar
-            uploads={selectedSection.uploads || []}
             history={selectedSection.history || []}
-            onClose={() => setIsRightSidebarOpen(false)}
+            onClose={() => {
+              setIsRightSidebarOpen(false);
+              if (!isDocumentsPinned) {
+                setIsDocumentsSidebarOpen(false);
+              }
+            }}
             groupId={selectedSection.id}
+          />
+        )}
+
+        {/* Documents sidebar */}
+        {(isDocumentsSidebarOpen || isDocumentsPinned) && (
+          <DocumentsSidebar
+            groupId={selectedSection.id}
+            open={isDocumentsSidebarOpen || isDocumentsPinned}
+            pinned={isDocumentsPinned}
+            onClose={() => {
+              setIsDocumentsSidebarOpen(false);
+              if (isDocumentsPinned) setIsDocumentsPinned(false);
+            }}
+            onPinToggle={toggleDocumentsPin}
             uploadDocument={uploadDocument}
+            getDocuments={getDocuments}
           />
         )}
 
@@ -368,6 +414,16 @@ const status = saveLoading
             className="fixed right-0 top-1/2 -translate-y-1/2 bg-white border border-l-0 border-slate-200 rounded-l-xl p-3 shadow-xl hover:bg-slate-50 transition-all duration-200 hover:shadow-2xl z-30 hidden md:block"
           >
             <PanelRightClose className="w-5 h-5 text-slate-600" />
+          </button>
+        )}
+
+        {/* Toggle button for documents sidebar */}
+        {!isDocumentsSidebarOpen && !isDocumentsPinned && (
+          <button
+            onClick={toggleDocumentsSidebar}
+            className="fixed right-0 top-[60%] -translate-y-1/2 bg-white border border-l-0 border-slate-200 rounded-l-xl p-3 shadow-xl hover:bg-slate-50 transition-all duration-200 hover:shadow-2xl z-30 hidden md:block"
+          >
+            <FileText className="w-5 h-5 text-slate-600" />
           </button>
         )}
       </div>
