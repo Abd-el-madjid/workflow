@@ -3,10 +3,13 @@ import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
 import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
+import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { AlertCircle, Calendar, CheckCircle2, Clock, Upload as UploadIcon, ChevronRight, FileText, X, Download } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { AlertCircle, Calendar, CheckCircle2, Clock, Upload as UploadIcon, ChevronRight, FileText, X, Download, Plus, Edit, Trash2 } from "lucide-react";
 import { cn } from "./ui/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type Dispatch, type SetStateAction } from "react";
 import { supabaseClient } from "../../../supabaseClient";
 import { BEFORE_SECS, AFTER_SECS } from "../../imports/data";
 import type { ChecklistState } from "../hooks/useChecklistAuth";
@@ -17,6 +20,8 @@ interface MainContentProps {
   getDocuments: (groupId: string) => Promise<any[]>;
   saveLetter: (letterId: string, title: string, content: string, pdfFile?: File) => Promise<void>;
   getLetter: (letterId: string) => Promise<any>;
+  setState: Dispatch<SetStateAction<ChecklistState>>;
+  onUpdateSection: (section: any) => void;
 }
 
 const BADGE_COLORS = {
@@ -42,10 +47,70 @@ const TAG_STYLES = {
   "inf": { bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-300", label: "Info", icon: AlertCircle },
 };
 
-export function MainContent({ section, state, onChecklistToggle, getDocuments, saveLetter, getLetter }: MainContentProps) {
+const ITEM_TYPES = [
+  { value: "task", label: "Tâche", icon: "📝" },
+  { value: "note", label: "Note", icon: "💡" },
+  { value: "instruction", label: "Instruction", icon: "⚠️" },
+];
+
+const ITEM_COLOR_CLASSES = {
+  "b-blu": "bg-blue-50 border-blue-200 text-slate-900",
+  "b-grn": "bg-emerald-50 border-emerald-200 text-slate-900",
+  "b-amb": "bg-amber-50 border-amber-200 text-slate-900",
+  "b-red": "bg-red-50 border-red-200 text-slate-900",
+  "b-pur": "bg-purple-50 border-purple-200 text-slate-900",
+  "b-slate": "bg-slate-50 border-slate-200 text-slate-900",
+};
+
+const ITEM_STYLE_CLASSES = {
+  normal: "",
+  small: "text-sm",
+  bold: "font-semibold",
+};
+
+export function MainContent({ section, state, onChecklistToggle, getDocuments, saveLetter, getLetter, setState, onUpdateSection }: MainContentProps) {
   
+  const [sectionData, setSectionData] = useState<any>(section);
+  const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
+  const [isEditNoteOpen, setIsEditNoteOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [itemForm, setItemForm] = useState({
+    id: "",
+    t: "",
+    d: "",
+    s: "",
+    g: [] as string[],
+    linkedTo: "",
+    type: "task",
+    color: "b-blu",
+    style: "normal",
+  });
+  const [noteForm, setNoteForm] = useState({
+    t: section.note?.t || "",
+    c: section.note?.c || "n-grn"
+  });
   const [letterContent, setLetterContent] = useState(section.content || "");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setSectionData(section);
+    setItemForm({
+      id: "",
+      t: "",
+      d: "",
+      s: "",
+      g: [],
+      linkedTo: "",
+      type: "task",
+      color: "b-blu",
+      style: "normal",
+    });
+    setNoteForm({
+      t: section.note?.t || "",
+      c: section.note?.c || "n-grn"
+    });
+    setLetterContent(section.content || "");
+  }, [section]);
   const [isLatexMode, setIsLatexMode] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +153,142 @@ export function MainContent({ section, state, onChecklistToggle, getDocuments, s
     }
     setExpandedItems(newExpanded);
   };
+
+  const generateItemId = (sectionId: string, items: any[], linkedTo: string) => {
+    const prefix = sectionId === "resume" ? "r" : sectionId;
+    if (sectionId === "resume" && linkedTo) {
+      return `r-${linkedTo}`;
+    }
+
+    const existingNumbers = (items || [])
+      .map((item: any) => item.id)
+      .map((id: string) => {
+        const match = id.match(new RegExp(`^${prefix}-(?:.*?)(\\d+)$`)) || id.match(new RegExp(`^${prefix}(\\d+)$`));
+        return match ? Number(match[1]) : null;
+      })
+      .filter((n) => n !== null) as number[];
+
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    return sectionId === "resume" ? `r-${nextNumber}` : `${prefix}${nextNumber}`;
+  };
+
+  const openAddItemDialog = () => {
+    setItemForm({
+      id: "",
+      t: "",
+      d: "",
+      s: "",
+      g: [],
+      linkedTo: "",
+      type: "task",
+      color: "b-blu",
+      style: "normal",
+    });
+    setEditingItem(null);
+    setIsItemDialogOpen(true);
+  };
+
+  const openEditItemDialog = (item: any) => {
+    setEditingItem(item);
+    setItemForm({
+      id: item.id,
+      t: item.t,
+      d: item.d || "",
+      s: item.s || "",
+      g: item.g || [],
+      linkedTo: item.linkedTo || "",
+      type: item.type || "task",
+      color: item.color || "b-blu",
+      style: item.style || "normal",
+    });
+    setIsItemDialogOpen(true);
+  };
+
+  const saveItem = () => {
+    const newItems = [...(sectionData.items || [])];
+    const id = editingItem
+      ? itemForm.id.trim()
+      : generateItemId(sectionData.id, sectionData.items || [], itemForm.linkedTo.trim());
+    const itemData = {
+      id,
+      t: itemForm.t.trim(),
+      d: itemForm.d.trim(),
+      s: itemForm.s.trim(),
+      g: itemForm.g,
+      linkedTo: itemForm.linkedTo.trim() || null,
+      type: itemForm.type,
+      color: itemForm.color,
+      style: itemForm.style,
+      custom: editingItem ? editingItem.custom : true,
+    };
+
+    if (editingItem) {
+      const index = newItems.findIndex((item) => item.id === editingItem.id);
+      if (index >= 0) {
+        newItems[index] = { ...newItems[index], ...itemData };
+      }
+    } else {
+      newItems.push(itemData);
+    }
+
+    const updatedSection = { ...sectionData, items: newItems };
+    setSectionData(updatedSection);
+    onUpdateSection(updatedSection);
+    if (!state[itemData.id]) {
+      setState((prev) => ({ ...prev, [itemData.id]: false }));
+    }
+
+    setIsItemDialogOpen(false);
+    setEditingItem(null);
+  };
+
+  const deleteItem = (itemId: string) => {
+    const itemToDelete = (sectionData.items || []).find((item: any) => item.id === itemId);
+    if (!itemToDelete?.custom) return;
+
+    const updatedSection = {
+      ...sectionData,
+      items: (sectionData.items || []).filter((item: any) => item.id !== itemId),
+    };
+    setSectionData(updatedSection);
+    onUpdateSection(updatedSection);
+  };
+
+  const toggleTag = (tag: string) => {
+    setItemForm((prev) => ({
+      ...prev,
+      g: prev.g.includes(tag) ? prev.g.filter((t) => t !== tag) : [...prev.g, tag],
+    }));
+  };
+
+  const openEditNoteDialog = () => {
+    setNoteForm({
+      t: sectionData.note?.t || "",
+      c: sectionData.note?.c || "n-grn"
+    });
+    setIsEditNoteOpen(true);
+  };
+
+  const saveNote = () => {
+    const updatedSection = {
+      ...sectionData,
+      note: noteForm.t.trim()
+        ? { t: noteForm.t.trim(), c: noteForm.c }
+        : null,
+    };
+    setSectionData(updatedSection);
+    onUpdateSection(updatedSection);
+    setIsEditNoteOpen(false);
+  };
+
+  const tagLabels = {
+    req: "Obligatoire",
+    opt: "Optionnel",
+    don: "Fait",
+    inf: "Info",
+  };
+
+  const availableTags = ["req", "opt", "don", "inf"];
 
   const compileLatex = async () => {
     if (!letterContent.trim()) return;
@@ -199,6 +400,154 @@ ${letterContent}
               <p className="text-sm text-slate-600 mt-2 italic">{section.subtitle}</p>
             )}
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Dialog open={isItemDialogOpen} onOpenChange={setIsItemDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Ajouter un item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>{editingItem ? "Modifier l'item" : "Ajouter un item"}</DialogTitle>
+                  <DialogDescription>Ajoutez directement un élément à cette section.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label>ID automatique</Label>
+                      <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                        {editingItem
+                          ? itemForm.id
+                          : generateItemId(sectionData.id, sectionData.items || [], itemForm.linkedTo.trim())}
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="item-linked">Relie à</Label>
+                      <Input
+                        id="item-linked"
+                        value={itemForm.linkedTo}
+                        onChange={(e) => setItemForm((prev) => ({ ...prev, linkedTo: e.target.value }))}
+                        placeholder="cf1, dip1, ..."
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="item-type">Type</Label>
+                      <Select
+                        value={itemForm.type}
+                        onValueChange={(value) => setItemForm((prev) => ({ ...prev, type: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ITEM_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.icon} {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="item-color">Couleur</Label>
+                      <Select
+                        value={itemForm.color}
+                        onValueChange={(value) => setItemForm((prev) => ({ ...prev, color: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Couleur" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="b-blu">Bleu</SelectItem>
+                          <SelectItem value="b-grn">Vert</SelectItem>
+                          <SelectItem value="b-amb">Ambre</SelectItem>
+                          <SelectItem value="b-red">Rouge</SelectItem>
+                          <SelectItem value="b-pur">Violet</SelectItem>
+                          <SelectItem value="b-slate">Neutre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="item-style">Style</Label>
+                      <Select
+                        value={itemForm.style}
+                        onValueChange={(value) => setItemForm((prev) => ({ ...prev, style: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="small">Petit</SelectItem>
+                          <SelectItem value="bold">Gras</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="item-title">Titre</Label>
+                    <Input
+                      id="item-title"
+                      value={itemForm.t}
+                      onChange={(e) => setItemForm((prev) => ({ ...prev, t: e.target.value }))}
+                      placeholder="Titre de l'item"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="item-desc">Résumé</Label>
+                    <Textarea
+                      id="item-desc"
+                      value={itemForm.d}
+                      onChange={(e) => setItemForm((prev) => ({ ...prev, d: e.target.value }))}
+                      rows={2}
+                      placeholder="Sous-titre léger ou résumé"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="item-details">Détails ou instruction</Label>
+                    <Textarea
+                      id="item-details"
+                      value={itemForm.s}
+                      onChange={(e) => setItemForm((prev) => ({ ...prev, s: e.target.value }))}
+                      rows={3}
+                      placeholder="Ajoutez une note, une instruction ou un détail déroulant"
+                    />
+                  </div>
+                  <div>
+                    <Label>Tags / Flags</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {availableTags.map((tag) => (
+                        <Button
+                          key={tag}
+                          variant={itemForm.g.includes(tag) ? "secondary" : "outline"}
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => toggleTag(tag)}
+                        >
+                          {tagLabels[tag as keyof typeof tagLabels]}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outline" onClick={() => { setIsItemDialogOpen(false); setEditingItem(null); }}>
+                      Annuler
+                    </Button>
+                    <Button onClick={saveItem} disabled={!itemForm.t.trim()}>
+                      Enregistrer
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" size="sm" onClick={openEditNoteDialog}>
+              Modifier la note
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -220,6 +569,52 @@ ${letterContent}
               </div>
             </div>
           )}
+
+          <Dialog open={isEditNoteOpen} onOpenChange={setIsEditNoteOpen}>
+            <DialogContent className="max-w-xl">
+              <DialogHeader>
+                <DialogTitle>Modifier la note</DialogTitle>
+                <DialogDescription>Éditez le texte et la couleur de la note de section.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="note-edit-text">Texte de la note</Label>
+                  <Textarea
+                    id="note-edit-text"
+                    value={noteForm.t}
+                    onChange={(e) => setNoteForm((prev) => ({ ...prev, t: e.target.value }))}
+                    rows={4}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="note-edit-color">Couleur</Label>
+                  <Select
+                    value={noteForm.c}
+                    onValueChange={(value) => setNoteForm((prev) => ({ ...prev, c: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choisir une couleur" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="n-grn">Vert</SelectItem>
+                      <SelectItem value="n-blu">Bleu</SelectItem>
+                      <SelectItem value="n-amb">Ambre</SelectItem>
+                      <SelectItem value="n-red">Rouge</SelectItem>
+                      <SelectItem value="n-pur">Violet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setIsEditNoteOpen(false)}>
+                    Annuler
+                  </Button>
+                  <Button onClick={saveNote} disabled={!noteForm.t.trim()}>
+                    Enregistrer
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Explanations Section (for definition pages) */}
           {section.expls && section.expls.length > 0 && (
@@ -551,6 +946,9 @@ ${letterContent}
                       const primaryTag = item.g?.[0];
                       const secondaryTag = item.g?.[1];
                       const tagStyle = TAG_STYLES[primaryTag as keyof typeof TAG_STYLES];
+                      const itemType = ITEM_TYPES.find((type) => type.value === item.type);
+                      const itemColorClass = !item.checked ? ITEM_COLOR_CLASSES[item.color || "b-slate"] : "";
+                      const itemStyleClass = ITEM_STYLE_CLASSES[item.style || "normal"];
 
                       return (
                         <div
@@ -559,7 +957,8 @@ ${letterContent}
                             "border-2 rounded-xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-md",
                             item.checked
                               ? "bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-300"
-                              : "bg-white border-slate-200 hover:border-slate-300"
+                              : cn("bg-white border-slate-200 hover:border-slate-300", itemColorClass),
+                            itemStyleClass
                           )}
                         >
                           <div className="p-4">
@@ -588,6 +987,12 @@ ${letterContent}
                               />
 
                               <div className="flex-1 min-w-0">
+                                {itemType && (
+                                  <div className="inline-flex items-center gap-2 mb-3 text-xs font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded-full px-3 py-1">
+                                    <span>{itemType.icon}</span>
+                                    <span>{itemType.label}</span>
+                                  </div>
+                                )}
                                 <button
                                   onClick={() => toggleItemExpanded(item.id)}
                                   className="w-full text-left group"
@@ -628,6 +1033,28 @@ ${letterContent}
                                       <Clock className="w-3 h-3 mr-1" />
                                       {secondaryTag}
                                     </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-3">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs"
+                                    onClick={() => openEditItemDialog(item)}
+                                  >
+                                    <Edit className="w-3 h-3 mr-1" />
+                                    Modifier
+                                  </Button>
+                                  {item.custom && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-xs text-rose-600 border-rose-300 hover:text-rose-700"
+                                      onClick={() => deleteItem(item.id)}
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-1" />
+                                      Supprimer
+                                    </Button>
                                   )}
                                 </div>
 

@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { LoginPage } from "./components/LoginPage";
 import { DashboardLayout } from "./components/DashboardLayout";
+import { DataManager } from "./components/DataManager";
 import { useChecklistAuth } from "./hooks/useChecklistAuth";
 
 export default function App() {
+  const [showDataManager, setShowDataManager] = useState(false);
   const {
     user,
     loading,
     state,
+    setState,
     toggle,
     reset,
     logout,
@@ -34,11 +38,16 @@ export default function App() {
     return <LoginPage onLogin={() => {}} />;
   }
 
+  if (showDataManager) {
+    return (
+      <DataManager onBackToApp={() => setShowDataManager(false)} />
+    );
+  }
+
   return (
     <DashboardLayout
       user={user}
-      state={state}
-      progress={progress}
+      state={state}      setState={setState}      progress={progress}
       saveStatus={saveStatus}
       saveLoading={saveLoading}
       onToggle={toggle}
@@ -48,6 +57,7 @@ export default function App() {
       getDocuments={getDocuments}
       saveLetter={saveLetter}
       getLetter={getLetter}
+      onShowDataManager={() => setShowDataManager(true)}
     />
   );
 }

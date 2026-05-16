@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import {
   LogOut,
   User,
@@ -11,7 +16,10 @@ import {
   ChevronDown,
   PanelRightClose,
   Menu,
-  FileText
+  FileText,
+  Plus,
+  Tag,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "./ui/utils";
 import { MainContent } from "./MainContent";
@@ -36,6 +44,8 @@ interface DashboardLayoutProps {
   getDocuments: (groupId: string) => Promise<any[]>;
   saveLetter: (letterId: string, title: string, content: string, pdfFile?: File) => Promise<void>;
   getLetter: (letterId: string) => Promise<any>;
+  setState: Dispatch<SetStateAction<ChecklistState>>;
+  onShowDataManager: () => void;
 }
 
 
@@ -46,6 +56,23 @@ const BADGE_COLORS = {
   "b-blu": "bg-blue-100 text-blue-800 border-blue-300",
   "b-pur": "bg-purple-100 text-purple-800 border-purple-300",
 };
+
+const SECTION_ICON_OPTIONS = ["📝", "📌", "🎯", "✈️", "✅", "📄", "🔔", "🛂", "📎", "💡"];
+const SECTION_BADGE_PRESETS = [
+  { text: "À lire", color: "b-blu" },
+  { text: "Important", color: "b-red" },
+  { text: "Nouveau", color: "b-grn" },
+  { text: "Optionnel", color: "b-amb" },
+];
+
+const MENU_ICON_OPTIONS = ["📁", "📌", "✈️", "🎯", "🗂️", "📝", "📨", "💡", "🔔"];
+const MENU_COLOR_OPTIONS = [
+  { label: "Bleu", value: "from-blue-500 to-cyan-500" },
+  { label: "Violet", value: "from-purple-500 to-pink-500" },
+  { label: "Orange", value: "from-orange-500 to-red-500" },
+  { label: "Vert", value: "from-emerald-500 to-lime-500" },
+  { label: "Gris", value: "from-slate-500 to-slate-700" },
+];
 
 const menuData = [
   {
@@ -92,10 +119,24 @@ export function DashboardLayout({
   getDocuments,
   saveLetter,
   getLetter,
+  setState,
+  onShowDataManager,
 }: DashboardLayoutProps) {
-  const [selectedMenu, setSelectedMenu] = useState<string>("avant-visa");
-  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(["avant-visa"]));
-  const [selectedSection, setSelectedSection] = useState<any>(BEFORE_SECS[0]);
+  const [menuState, setMenuState] = useState(menuData);
+  const [selectedMenu, setSelectedMenu] = useState<string>(menuData[0]?.id || "avant-visa");
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set([menuData[0]?.id || "avant-visa"]));
+  const [selectedSection, setSelectedSection] = useState<any>(menuData[0]?.sections?.[0] || BEFORE_SECS[0]);
+  const [isAddSectionOpen, setIsAddSectionOpen] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const [newMenuTitle, setNewMenuTitle] = useState("");
+  const [newMenuIcon, setNewMenuIcon] = useState("📁");
+  const [newMenuColor, setNewMenuColor] = useState("from-slate-500 to-slate-600");
+  const [newSectionTitle, setNewSectionTitle] = useState("");
+  const [newSectionIcon, setNewSectionIcon] = useState("📝");
+  const [newSectionBadgeText, setNewSectionBadgeText] = useState("");
+  const [newSectionBadgeColor, setNewSectionBadgeColor] = useState("b-blu");
+  const [newSectionNoteText, setNewSectionNoteText] = useState("");
+  const [newSectionNoteColor, setNewSectionNoteColor] = useState("n-grn");
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
   const [isDocumentsSidebarOpen, setIsDocumentsSidebarOpen] = useState(false);
   const [isDocumentsPinned, setIsDocumentsPinned] = useState(false);
@@ -105,7 +146,7 @@ export function DashboardLayout({
     : saveStatus === "unsaved"
     ? "unsaved"
     : "saved";
-  const currentMenu = menuData.find(m => m.id === selectedMenu);
+  const currentMenu = menuState.find(m => m.id === selectedMenu);
 
   const getSectionWithState = (section: any) => {
     if (!section) return section;
@@ -132,6 +173,144 @@ export function DashboardLayout({
 
   const toggleChecklistItem = (itemId: string) => {
     onToggle(itemId);
+  };
+
+  const updateSection = (updatedSection: any) => {
+    setMenuState((prev) =>
+      prev.map((menu) => ({
+        ...menu,
+        sections: menu.sections.map((section: any) =>
+          section.id === updatedSection.id ? updatedSection : section
+        ),
+      }))
+    );
+    setSelectedSection(updatedSection);
+  };
+
+  const generateMenuId = (title: string) => {
+    return title
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
+  const generateSectionId = (title: string) => {
+    return title
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
+  const handleCreateSection = () => {
+    if (!newSectionTitle.trim()) return;
+
+    const generatedId = generateSectionId(newSectionTitle) || `sec-${Date.now()}`;
+    const newSection = {
+      id: generatedId,
+      nm: newSectionTitle.trim(),
+      ico: newSectionIcon || "📝",
+      badge: newSectionBadgeText.trim()
+        ? { t: newSectionBadgeText.trim(), c: newSectionBadgeColor }
+        : null,
+      note: newSectionNoteText.trim()
+        ? { t: newSectionNoteText.trim(), c: newSectionNoteColor }
+        : null,
+      items: [],
+      custom: true,
+    };
+
+    setMenuState((prev: any) =>
+      prev.map((menu: any) =>
+        menu.id === selectedMenu
+          ? { ...menu, sections: [...menu.sections, newSection] }
+          : menu
+      )
+    );
+    setSelectedSection(newSection);
+    setIsAddSectionOpen(false);
+    setNewSectionTitle("");
+    setNewSectionIcon("📝");
+    setNewSectionBadgeText("");
+    setNewSectionBadgeColor("b-blu");
+    setNewSectionNoteText("");
+    setNewSectionNoteColor("n-grn");
+  };
+
+  const handleCreateMenu = () => {
+    if (!newMenuTitle.trim()) return;
+
+    const generatedMenuId = generateMenuId(newMenuTitle) || `menu-${Date.now()}`;
+    const initialSection = {
+      id: `${generatedMenuId}-section-1`,
+      nm: "Nouvelle section",
+      ico: "📝",
+      items: [],
+      custom: true,
+    };
+
+    const newMenu = {
+      id: generatedMenuId,
+      label: newMenuTitle.trim(),
+      icon: newMenuIcon,
+      color: newMenuColor,
+      sections: [initialSection],
+      custom: true,
+    };
+
+    setMenuState((prev: any) => [...prev, newMenu]);
+    setSelectedMenu(newMenu.id);
+    setExpandedMenus((prev) => new Set(prev).add(newMenu.id));
+    setSelectedSection(initialSection);
+    setIsAddMenuOpen(false);
+    setNewMenuTitle("");
+    setNewMenuIcon("📁");
+    setNewMenuColor("from-slate-500 to-slate-600");
+  };
+
+  const handleDeleteSection = () => {
+    if (!selectedSection?.custom) return;
+
+    setMenuState((prev: any) =>
+      prev.map((menu: any) => {
+        if (menu.id !== selectedMenu) return menu;
+        const updatedSections = menu.sections.filter(
+          (section: any) => section.id !== selectedSection.id
+        );
+        return { ...menu, sections: updatedSections };
+      })
+    );
+
+    const currentMenu = menuState.find((menu) => menu.id === selectedMenu);
+    const nextSection = currentMenu?.sections?.find(
+      (section: any) => section.id !== selectedSection.id
+    );
+
+    setSelectedSection(nextSection || currentMenu?.sections?.[0] || null);
+    setIsAddSectionOpen(false);
+  };
+
+  const handleDeleteMenu = () => {
+    if (!(currentMenu as any)?.custom) return;
+
+    setMenuState((prev: any) => {
+      const updatedMenus = prev.filter((menu: any) => menu.id !== selectedMenu);
+      const nextMenu = updatedMenus[0];
+      if (nextMenu) {
+        setSelectedMenu(nextMenu.id);
+        setExpandedMenus((prevExpanded) => new Set(prevExpanded).add(nextMenu.id));
+        setSelectedSection(nextMenu.sections?.[0] || null);
+      } else {
+        setSelectedMenu("");
+        setSelectedSection(null);
+      }
+      return updatedMenus;
+    });
   };
 
   const openDocumentsSidebar = () => {
@@ -209,6 +388,14 @@ export function DashboardLayout({
           >
             {saveLoading ? "Enregistrement..." : "Réinitialiser"}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onShowDataManager}
+            className="hidden md:inline-flex h-9 px-3 text-slate-700 border-slate-200 hover:bg-slate-100"
+          >
+            Gérer les données
+          </Button>
           <Separator orientation="vertical" className="h-6 hidden md:block" />
           <div className="flex items-center gap-3 bg-gradient-to-r from-slate-100 to-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
@@ -266,7 +453,7 @@ export function DashboardLayout({
             {/* Menu */}
             <ScrollArea className="flex-1 px-3 py-4">
               <div className="space-y-2">
-                {menuData.map((menu) => (
+                {menuState.map((menu) => (
                   <div key={menu.id}>
                     <button
                       onClick={() => {
@@ -342,6 +529,228 @@ export function DashboardLayout({
                 ))}
               </div>
             </ScrollArea>
+            <div className="px-4 pb-4 pt-2 border-t border-slate-700/50">
+              <div className="grid gap-2">
+                <Dialog open={isAddSectionOpen} onOpenChange={setIsAddSectionOpen}>
+                  <div className="flex items-center justify-between gap-2">
+                    <DialogTrigger asChild>
+                      <Button variant="secondary" size="sm" className="w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Ajouter une section
+                      </Button>
+                    </DialogTrigger>
+                  </div>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Nouvelle section</DialogTitle>
+                      <DialogDescription>Ajoutez une section directement au menu actif.</DialogDescription>
+                    </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>ID de section</Label>
+                      <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                        {generateSectionId(newSectionTitle) || "sera généré automatiquement"}
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="section-name">Nom de la section</Label>
+                      <Input
+                        id="section-name"
+                        value={newSectionTitle}
+                        onChange={(e) => setNewSectionTitle(e.target.value)}
+                        placeholder="Nom de la section"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="section-icon">Icône</Label>
+                      <Select
+                        value={newSectionIcon}
+                        onValueChange={(value) => setNewSectionIcon(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir une icône" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SECTION_ICON_OPTIONS.map((icon) => (
+                            <SelectItem key={icon} value={icon}>
+                              {icon}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="badge-text">Badge</Label>
+                      <Select
+                        value={newSectionBadgeText}
+                        onValueChange={(value) => {
+                          setNewSectionBadgeText(value);
+                          const preset = SECTION_BADGE_PRESETS.find((item) => item.text === value);
+                          if (preset) setNewSectionBadgeColor(preset.color);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir un badge" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SECTION_BADGE_PRESETS.map((badge) => (
+                            <SelectItem key={badge.text} value={badge.text}>
+                              {badge.text}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="badge-color">Couleur du badge</Label>
+                      <Select
+                        value={newSectionBadgeColor}
+                        onValueChange={(value) => setNewSectionBadgeColor(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir une couleur" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="b-amb">Ambre</SelectItem>
+                          <SelectItem value="b-grn">Vert</SelectItem>
+                          <SelectItem value="b-blu">Bleu</SelectItem>
+                          <SelectItem value="b-red">Rouge</SelectItem>
+                          <SelectItem value="b-pur">Violet</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="note-text">Note</Label>
+                      <Textarea
+                        id="note-text"
+                        value={newSectionNoteText}
+                        onChange={(e) => setNewSectionNoteText(e.target.value)}
+                        placeholder="Texte de note"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="note-color">Couleur de note</Label>
+                      <Select
+                        value={newSectionNoteColor}
+                        onValueChange={(value) => setNewSectionNoteColor(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir une couleur" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="n-grn">Vert</SelectItem>
+                          <SelectItem value="n-blu">Bleu</SelectItem>
+                          <SelectItem value="n-amb">Ambre</SelectItem>
+                          <SelectItem value="n-red">Rouge</SelectItem>
+                          <SelectItem value="n-pur">Violet</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <div className="flex justify-between gap-2">
+                        <Button variant="outline" onClick={() => setIsAddSectionOpen(false)}>
+                          Annuler
+                        </Button>
+                        <Button onClick={handleCreateSection} disabled={!newSectionTitle.trim()}>
+                          Créer
+                        </Button>
+                      </div>
+                      {selectedSection?.custom && (
+                        <Button variant="destructive" size="sm" onClick={handleDeleteSection}>
+                          Supprimer la section personnalisée
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
+                <div className="flex items-center justify-between gap-2">
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Ajouter un chapitre
+                    </Button>
+                  </DialogTrigger>
+                </div>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Nouveau chapitre</DialogTitle>
+                    <DialogDescription>Ajoutez un nouveau chapitre au menu principal.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>ID du chapitre</Label>
+                      <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                        {generateMenuId(newMenuTitle) || "sera généré automatiquement"}
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="menu-name">Nom du chapitre</Label>
+                      <Input
+                        id="menu-name"
+                        value={newMenuTitle}
+                        onChange={(e) => setNewMenuTitle(e.target.value)}
+                        placeholder="Nom du chapitre"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="menu-icon">Icône du chapitre</Label>
+                      <Select
+                        value={newMenuIcon}
+                        onValueChange={(value) => setNewMenuIcon(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir une icône" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MENU_ICON_OPTIONS.map((icon) => (
+                            <SelectItem key={icon} value={icon}>
+                              {icon}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="menu-color">Couleur du chapitre</Label>
+                      <Select
+                        value={newMenuColor}
+                        onValueChange={(value) => setNewMenuColor(value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir une couleur" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MENU_COLOR_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex justify-between gap-2 pt-2">
+                      <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>
+                        Annuler
+                      </Button>
+                      <Button onClick={handleCreateMenu} disabled={!newMenuTitle.trim()}>
+                        Créer
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {(currentMenu as any)?.custom && (
+                <Button variant="destructive" size="sm" onClick={handleDeleteMenu}>
+                  Supprimer le chapitre personnalisé
+                </Button>
+              )}
+              </div>
+            </div>
           </div>
 
           {/* Bottom section - Logout */}
@@ -374,6 +783,8 @@ export function DashboardLayout({
             getDocuments={getDocuments}
             saveLetter={saveLetter}
             getLetter={getLetter}
+            setState={setState}
+            onUpdateSection={updateSection}
           />
         </main>
 
