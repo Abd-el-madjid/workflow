@@ -3,7 +3,6 @@ render_with_liquid: false
 ---
 
 # 🎯 Guide Complet d'Intégration DashboardLayout
-# 🎯 Guide Complet d'Intégration DashboardLayout
 
 ## Vue d'ensemble
 
