@@ -947,8 +947,8 @@ ${letterContent}
                       const secondaryTag = item.g?.[1];
                       const tagStyle = TAG_STYLES[primaryTag as keyof typeof TAG_STYLES];
                       const itemType = ITEM_TYPES.find((type) => type.value === item.type);
-                      const itemColorClass = !item.checked ? ITEM_COLOR_CLASSES[item.color || "b-slate"] : "";
-                      const itemStyleClass = ITEM_STYLE_CLASSES[item.style || "normal"];
+                      const itemColorClass = !item.checked ? ITEM_COLOR_CLASSES[(item.color || "b-slate") as keyof typeof ITEM_COLOR_CLASSES] : "";
+                      const itemStyleClass = ITEM_STYLE_CLASSES[(item.style || "normal") as keyof typeof ITEM_STYLE_CLASSES];
 
                       return (
                         <div
