@@ -97,11 +97,13 @@ const handleReset = () => {
 
 ### 6. Afficher le progress du hook
 
+{% raw %}
 ```jsx
 // Utiliser le progress du hook au lieu de calculer localement
 <div className="progress-bar" style={{ width: `${progress.percentage}%` }} />
 <span>{progress.checked} / {progress.total}</span>
 ```
+{% endraw %}
 
 ### 7. Intégrer le logout
 
