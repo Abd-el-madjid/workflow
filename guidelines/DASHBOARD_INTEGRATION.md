@@ -99,7 +99,7 @@ const handleReset = () => {
 
 ```jsx
 // Utiliser le progress du hook au lieu de calculer localement
-<div className="progress-bar" style=\{{ width: `${progress.percentage}%` \}} />
+<div className="progress-bar" style={{ width: `${progress.percentage}%` }} />
 <span>{progress.checked} / {progress.total}</span>
 ```
 
