@@ -299,6 +299,14 @@ export const BEFORE_SECS = [
         linkedTo: "let5",
       },
       {
+        id: "r-let8",
+        t: "Lettre prise en charge — père",
+        d: "📄 Original légalisé APC + copie N&B",
+        s: "",
+        g: ["req"],
+        linkedTo: "let8",
+      },
+      {
         id: "r-let6",
         t: "Lettre lien de parenté — père",
         d: "🖨️ N&B ×1 — rédigée par toi",
@@ -766,6 +774,14 @@ export const BEFORE_SECS = [
         d: "La belle-sœur s'engage officiellement à subvenir à tes besoins financiers pendant ton séjour.",
         s: "<b>Contenu :</b> identité belle-sœur → lien avec toi → engagement à couvrir les frais de vie (loyer, nourriture, transport) → montant estimé → durée (1 an).<br><b>Légaliser :</b> mairie de son arrondissement parisien (paris.fr → RDV → état civil → légalisation de signature). Gratuit. Alternative : notaire (≈ 20€).",
         print: "📄 ORIGINAL légalisé mairie Paris + copie N&B — Elle t'envoie l'original par DHL.",
+        g: ["req"],
+      },
+      {
+        id: "let8",
+        t: "Lettre prise en charge — père",
+        d: "Le père s'engage officiellement à prendre en charge financièrement ton séjour en France.",
+        s: "<b>Contenu :</b> identité du père → lien de parenté → montant de la pension (60 000 DA/mois) → engagement explicite à couvrir les frais de vie et d'études → durée (1 an académique) → signature manuscrite du père.<br><b>Différence avec la lettre d'engagement :</b> cette lettre est la prise en charge officielle légalisée — c'est elle qui a valeur juridique. La lettre d'engagement est plus informelle.<br><b>Légaliser :</b> APC du domicile du père → service légalisation → original + copie + CNI du père → cachet + signature. Timbre fiscal 200 DA.",
+        print: "📄 ORIGINAL légalisé APC + copie N&B — Le père signe, tu fais légaliser à l'APC.",
         g: ["req"],
       },
       {
